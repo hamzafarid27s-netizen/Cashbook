@@ -92,6 +92,7 @@
   .check small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
   .sheet input[type=date]{display:block;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;text-align:left}
   .sheet{overflow-x:hidden}
+  .wa{background:#25d366;color:#fff}
   .hint{font-size:12px;color:var(--muted);margin-top:8px}
 </style>
 </head>
@@ -99,7 +100,7 @@
 <header>
   <div class="top">
     <h1>Cash Book</h1>
-    <button class="ghost" id="exportBtn">Export</button>
+    <button class="ghost wa" id="waBtn">WhatsApp</button>
   </div>
   <div class="datebar">
     <button class="nav" id="prevDay" aria-label="Previous day">‹</button>
@@ -183,23 +184,6 @@
       <button class="del" id="delBtn">Delete</button>
       <button class="cancel" data-close>Cancel</button>
       <button class="save" id="saveBtn">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- Export sheet -->
-<div id="exportWrap">
-  <div class="sheet-bg" data-close></div>
-  <div class="sheet">
-    <h3>Export Entries</h3>
-    <label class="f">From</label>
-    <input type="date" id="exFrom">
-    <label class="f">To</label>
-    <input type="date" id="exTo">
-    <div class="hint">Saves a CSV file that opens in Excel, Numbers or Google Sheets.</div>
-    <div class="actions">
-      <button class="cancel" data-close>Cancel</button>
-      <button class="save" id="doExport">Export</button>
     </div>
   </div>
 </div>
@@ -304,7 +288,30 @@ async function render(){
   const prev = sum(prior.filter(e => e.type === 'got')) - sum(prior.filter(e => e.type === 'gave'));
   setBal($('prevShop'), prev);
   setBal($('shopBalance'), stg - stv + prev);
+
+  // Text for the WhatsApp button (selected date, same as on screen)
+  const lines = (arr, shopTag) => arr.length
+    ? arr.map(e => `${e.note || '—'}${shopTag && e.shop ? ' (Shop)' : ''}: ${fmt(e.amount)}`)
+    : ['No entries'];
+  waText = [
+    `*Cash Book — ${niceDate(current)}*`,
+    '',
+    '*You Got*', ...lines(got.filter(e => !e.exception), true), `*Total Got: ${fmt(tg)}*`,
+    '',
+    '*You Gave*', ...lines(gave.filter(e => !e.exception), true), `*Total Gave: ${fmt(tv)}*`,
+    '',
+    `*Balance: ${fmt(tg - tv)}*`,
+    '',
+    '*SHOP*',
+    '_Shop Got_', ...lines(sGot.filter(e => !e.exception)), `Total Got (Shop): ${fmt(stg)}`,
+    '',
+    '_Shop Gave_', ...lines(sGave.filter(e => !e.exception)), `Total Gave (Shop): ${fmt(stv)}`,
+    '',
+    `Previous Day Shop Balance: ${fmt(prev)}`,
+    `*Shop Balance: ${fmt(stg - stv + prev)}*`
+  ].join('\n');
 }
+let waText = '';
 
 /* ---------- Date navigation ---------- */
 $('prevDay').onclick = () => { current = addDays(current, -1); render(); };
@@ -375,49 +382,12 @@ $('delBtn').onclick = async () => {
   render();
 };
 
-/* ---------- Export (CSV) ---------- */
-$('exportBtn').onclick = () => {
-  $('exFrom').value = current; $('exTo').value = current;
-  openSheet('exportWrap');
-};
-const csvCell = v => { const s = String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-$('doExport').onclick = async () => {
-  let from = $('exFrom').value, to = $('exTo').value;
-  if (!from || !to) { alert('Please choose both dates.'); return; }
-  if (from > to) [from, to] = [to, from];
-
-  const entries = (await getRange(from, to)).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : byTime(a, b));
-  const prior = (await getBefore(from)).filter(e => e.shop);
-  let shopRun = sum(prior.filter(e => e.type === 'got')) - sum(prior.filter(e => e.type === 'gave'));
-
-  const rows = [['Date', 'Section', 'Type', 'Detail', 'Amount', 'Exception', 'Exclude']];
-  entries.forEach(e => rows.push([e.date, e.shop ? 'Shop' : 'Daily', e.type === 'got' ? 'You Got' : 'You Gave', e.note, e.amount,
-    e.exception ? 'Yes' : '', e.exclude ? 'Yes' : '']));
-
-  rows.push([], ['Daily Summary'],
-    ['Date', 'Total Got', 'Total Gave', 'Balance', 'Shop Got', 'Shop Gave', 'Previous Shop Balance', 'Shop Balance']);
-  for (let d = from; d <= to; d = addDays(d, 1)) {
-    const de = entries.filter(e => e.date === d);
-    const g = sum(de.filter(e => topCounts(e) && e.type === 'got')), v = sum(de.filter(e => topCounts(e) && e.type === 'gave'));
-    const sg = sum(de.filter(e => e.shop && e.type === 'got')), sv = sum(de.filter(e => e.shop && e.type === 'gave'));
-    const prevBal = shopRun; shopRun = shopRun + sg - sv;
-    if (de.length) rows.push([d, g, v, g - v, sg, sv, prevBal, shopRun]);
-  }
-
-  const csv = '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
-  const name = from === to ? `cashbook-${from}.csv` : `cashbook-${from}-to-${to}.csv`;
-  const file = new File([csv], name, { type: 'text/csv' });
-  try {
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: name });
-      closeSheets(); return;
-    }
-  } catch (err) { if (err.name === 'AbortError') return; }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(file); a.download = name;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  closeSheets();
+/* ---------- WhatsApp (selected date) ---------- */
+$('waBtn').onclick = () => {
+  const t = encodeURIComponent(waText);
+  location.href = 'whatsapp://send?text=' + t;
+  // If WhatsApp did not open, use the web link instead
+  setTimeout(() => { if (!document.hidden) location.href = 'https://wa.me/?text=' + t; }, 1500);
 };
 
 /* ---------- Start ---------- */
