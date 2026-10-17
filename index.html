@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>Cash Book</title>
-<meta name="theme-color" content="#14532d">
+<meta name="theme-color" content="#102a43">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,98 +14,144 @@
 <link rel="icon" href="icon-192.png">
 <style>
   :root{
-    --bg:#f6f4ee; --card:#ffffff; --ink:#1c1f1a; --muted:#6b7064; --line:#e6e2d6;
-    --got:#15803d; --got-bg:#e9f6ee; --gave:#c2410c; --gave-bg:#fdf0e8;
-    --brand:#14532d; --shop:#1d4ed8; --shop-bg:#eaf0fd;
+    --bg:#eef2f6; --card:#ffffff; --ink:#0f2236; --muted:#5f7186; --line:#e1e7ee; --line2:#c9d3de;
+    --navy:#102a43; --navy2:#1c3d5e;
+    --got:#0b7a55; --got-soft:#e3f4ec; --gave:#c0392b; --gave-soft:#fbe9e6;
+    --shop:#3a4bc4; --shop-soft:#e8ebfb; --exc:#9a6200; --exc-soft:#fbf1dc;
+    --r:16px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--bg);color:var(--ink);
-    font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-  body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
-  header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;
-    padding:calc(10px + env(safe-area-inset-top)) 16px 12px}
-  .top{display:flex;align-items:center;justify-content:space-between}
-  .top h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.2px}
-  .ghost{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:10px;
-    padding:8px 12px;font:600 14px inherit;font-family:inherit}
-  .datebar{display:flex;align-items:center;gap:8px;margin-top:10px}
-  .datebar button.nav{width:40px;height:40px;border-radius:10px;border:0;
-    background:rgba(255,255,255,.15);color:#fff;font-size:20px}
-  .datebox{flex:1;position:relative;height:40px;border-radius:10px;background:#fff;color:var(--ink);
-    display:flex;align-items:center;justify-content:center;font-weight:600}
+    font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  button{font-family:inherit;cursor:pointer}
+  button:focus-visible,input:focus-visible{outline:2px solid #5b8def;outline-offset:2px}
+
+  /* Header */
+  header{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;
+    padding:calc(12px + env(safe-area-inset-top)) 16px 16px;
+    box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+  .top{display:flex;align-items:center;justify-content:space-between;max-width:640px;margin:0 auto}
+  .top h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.3px}
+  .wa{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border:0;border-radius:19px;
+    background:#25d366;color:#fff;font-size:15px;font-weight:600}
+  .wa svg{width:18px;height:18px}
+  .datebar{display:flex;align-items:center;gap:8px;margin:14px auto 0;max-width:640px}
+  .datebar button.nav{width:44px;height:44px;border-radius:12px;border:0;flex:none;
+    background:var(--navy2);color:#fff;display:grid;place-items:center}
+  .datebar button.nav svg{width:20px;height:20px}
+  .datebox{flex:1;position:relative;height:44px;border-radius:12px;background:#fff;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px}
   .datebox input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
-  .today-chip{font-size:12px;color:var(--got);margin-left:6px;font-weight:600}
-  main{padding:12px 16px;max-width:640px;margin:0 auto}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
-  .card h2{margin:0;padding:10px 14px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;
-    display:flex;justify-content:space-between;align-items:center}
-  .h-got{background:var(--got-bg);color:var(--got)}
-  .h-gave{background:var(--gave-bg);color:var(--gave)}
-  .h-shop{background:var(--shop-bg);color:var(--shop)}
-  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;
-    padding:11px 14px;border-top:1px solid var(--line)}
-  .row.entry{cursor:pointer}
-  .row.entry:active{background:#f3f2ec}
-  .row .note{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .row .note small{display:block;color:var(--muted);font-size:12px}
-  .amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .today-chip{font-size:12px;font-weight:600;color:var(--got);background:var(--got-soft);
+    border-radius:8px;padding:2px 7px;margin-left:8px}
+
+  /* Cards */
+  main{padding:16px;max-width:640px;margin:0 auto}
+  .card{background:var(--card);border-radius:var(--r);margin-bottom:14px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(16,42,67,.06),0 0 0 1px rgba(16,42,67,.05)}
+  .card h2{margin:0;padding:14px 16px 10px;font-size:17px;font-weight:700;letter-spacing:-.2px;
+    display:flex;align-items:center;gap:9px}
+  .card h2::before{content:"";width:10px;height:10px;border-radius:3px;background:currentColor;flex:none}
+  .h-got{color:var(--got)} .h-gave{color:var(--gave)} .h-shop{color:var(--shop)}
+  .card h2 span{color:var(--ink)}
+
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:12px 16px;border-top:1px solid var(--line)}
+  .row.entry{cursor:pointer;transition:background .15s}
+  .row.entry:active{background:#f4f7fa}
+  .row .note{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px}
+  .row .note small{display:block;color:var(--muted);font-size:13px;margin-top:1px}
+  .amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;letter-spacing:-.2px}
   .got{color:var(--got)} .gave{color:var(--gave)}
-  .total{font-weight:700;background:#faf9f5}
-  .empty{padding:12px 14px;color:var(--muted);border-top:1px solid var(--line);font-size:14px}
-  .sub{padding:8px 14px;font-size:12px;font-weight:700;color:var(--muted);
-    text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--line);background:#fcfbf8}
-  .balance{padding:16px 14px;display:flex;justify-content:space-between;align-items:center}
-  .balance .lbl{font-weight:700;font-size:16px}
-  .balance .lbl small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
-  .balance .amt{font-size:22px}
+  /* Accounting double rule above totals */
+  .total{font-weight:700;border-top:3px double var(--line2);background:#fafbfd;padding-top:13px;padding-bottom:13px}
+  .total .amt{font-size:17px;font-weight:700}
+  .empty{padding:12px 16px;color:var(--muted);border-top:1px solid var(--line);font-size:14px}
+  .sub{padding:12px 16px 6px;font-size:14px;font-weight:600;color:var(--muted);border-top:1px solid var(--line)}
+
+  /* Balance */
+  .balance{padding:18px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .balance .lbl{font-weight:700;font-size:17px}
+  .balance .lbl small{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
+  .balance .amt{font-size:26px;font-weight:700}
+  .card.hero{background:var(--navy);color:#fff;box-shadow:0 6px 18px rgba(16,42,67,.22)}
+  .card.hero .lbl small{color:#9fb3c8}
+  .card.hero .amt.got{color:#5ee0a8} .card.hero .amt.gave{color:#ff8a7a}
+  .card.hero .amt{font-size:30px}
+
+  /* Shop */
+  .shop-bal{border-top:1px solid var(--line);background:var(--shop-soft)}
+  .shop-bal .lbl{color:var(--shop)}
+
+  /* Exception */
+  .ex-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;
+    background:var(--card);color:var(--exc);padding:14px 16px;font-size:16px;font-weight:700}
+  .ex-toggle .count{display:inline-block;min-width:24px;margin-left:8px;padding:2px 8px;border-radius:10px;
+    background:var(--exc-soft);color:var(--exc);font-size:13px;text-align:center}
+  .chev{font-size:14px;color:var(--muted)}
+
+  /* Bottom actions */
   .bottom{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:10px;
-    padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
-  .bottom button{flex:1;height:52px;border:0;border-radius:12px;color:#fff;font:700 16px inherit;font-family:inherit}
-  .b-got{background:var(--got)} .b-gave{background:var(--gave)}
-  .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:10;display:none}
-  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;background:#fff;border-radius:18px 18px 0 0;
-    padding:16px 16px calc(16px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .2s ease,visibility .2s;visibility:hidden;
-    max-width:640px;margin:0 auto}
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:rgba(238,242,246,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    border-top:1px solid var(--line)}
+  .bottom button{flex:1;height:54px;border:0;border-radius:14px;color:#fff;font-size:17px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:8px;max-width:310px}
+  .bottom{justify-content:center}
+  .bottom button svg{width:20px;height:20px}
+  .b-got{background:var(--got);box-shadow:0 4px 12px rgba(11,122,85,.28)}
+  .b-gave{background:var(--gave);box-shadow:0 4px 12px rgba(192,57,43,.25)}
+  .bottom button:active{transform:scale(.98)}
+
+  /* Sheets */
+  .sheet-bg{position:fixed;inset:0;background:rgba(15,34,54,.45);z-index:10;display:none}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;background:#fff;border-radius:22px 22px 0 0;
+    padding:10px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(100%);
+    transition:transform .25s cubic-bezier(.2,.8,.2,1),visibility .25s;visibility:hidden;
+    max-width:640px;margin:0 auto;overflow-x:hidden;max-height:92vh;overflow-y:auto}
+  .sheet::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:var(--line2);margin:0 auto 12px}
   .open .sheet-bg{display:block}
   .open .sheet{transform:none;visibility:visible}
-  .sheet h3{margin:0 0 12px;font-size:18px}
-  label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
-  .sheet input[type=text],.sheet input[type=number],.sheet input[type=date]{width:100%;height:46px;
-    border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:17px;font-family:inherit;background:#fff;color:var(--ink)}
-  .seg{display:flex;background:#f1efe8;border-radius:10px;padding:3px;gap:3px}
-  .seg button{flex:1;height:38px;border:0;border-radius:8px;background:transparent;font:600 14px inherit;font-family:inherit;color:var(--muted)}
-  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
-  .actions{display:flex;gap:10px;margin-top:16px}
-  .actions button{flex:1;height:48px;border-radius:12px;border:0;font:700 16px inherit;font-family:inherit}
-  .save{background:var(--brand);color:#fff}
-  .cancel{background:#f1efe8;color:var(--ink)}
-  .del{background:#fde8e8;color:#b91c1c}
-  .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--shop);background:var(--shop-bg);
-    border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
-  .ex-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;
-    background:#f3efe2;color:#7a5b00;padding:12px 14px;font:700 14px inherit;font-family:inherit;
-    text-transform:uppercase;letter-spacing:.6px}
-  .ex-toggle .count{display:inline-block;min-width:22px;margin-left:6px;padding:1px 7px;border-radius:10px;
-    background:#7a5b00;color:#fff;font-size:12px;letter-spacing:0;text-align:center}
-  .check{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-weight:600}
-  .check input{width:22px;height:22px;margin:0;flex:none;accent-color:var(--brand)}
-  .check small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+  @media (prefers-reduced-motion:reduce){.sheet{transition:none}}
+  .sheet h3{margin:0 0 14px;font-size:20px;letter-spacing:-.3px}
+  label.f{display:block;font-size:14px;font-weight:600;color:var(--muted);margin:14px 0 6px}
+  .sheet input[type=text],.sheet input[type=number],.sheet input[type=date]{width:100%;height:50px;
+    border:1.5px solid var(--line2);border-radius:12px;padding:0 14px;font-size:17px;font-family:inherit;
+    background:#fff;color:var(--ink)}
+  .sheet input:focus{border-color:var(--navy2);outline:none}
+  #fAmount{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;height:58px}
   .sheet input[type=date]{display:block;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;text-align:left}
-  .sheet{overflow-x:hidden}
-  .wa{background:#25d366;color:#fff}
-  .hint{font-size:12px;color:var(--muted);margin-top:8px}
+  .seg{display:flex;background:#eef2f6;border-radius:12px;padding:4px;gap:4px}
+  .seg button{flex:1;height:42px;border:0;border-radius:9px;background:transparent;font-size:15px;font-weight:600;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(16,42,67,.12)}
+  #typeSeg button[data-v=got].on{background:var(--got);color:#fff}
+  #typeSeg button[data-v=gave].on{background:var(--gave);color:#fff}
+  .checks{display:flex;gap:10px;margin-top:14px}
+  .check{flex:1;display:flex;gap:10px;align-items:center;font-weight:600;padding:12px 14px;
+    border:1.5px solid var(--line2);border-radius:12px}
+  .check:has(input:checked){border-color:var(--navy2);background:#f2f6fb}
+  .check input{width:22px;height:22px;margin:0;flex:none;accent-color:var(--navy)}
+  .actions{display:flex;gap:10px;margin-top:20px}
+  .actions button{flex:1;height:52px;border-radius:14px;border:0;font-size:17px;font-weight:700}
+  .save{background:var(--navy);color:#fff}
+  .cancel{background:#eef2f6;color:var(--ink)}
+  .del{background:var(--gave-soft);color:var(--gave)}
+  .tag{display:inline-block;font-size:12px;font-weight:600;color:var(--shop);background:var(--shop-soft);
+    border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px}
 </style>
 </head>
 <body>
 <header>
   <div class="top">
     <h1>Cash Book</h1>
-    <button class="ghost wa" id="waBtn">WhatsApp</button>
+    <button class="wa" id="waBtn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3z"/></svg>WhatsApp</button>
   </div>
   <div class="datebar">
-    <button class="nav" id="prevDay" aria-label="Previous day">‹</button>
+    <button class="nav" id="prevDay" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="datebox"><span id="dateLabel"></span><input type="date" id="datePick"></div>
-    <button class="nav" id="nextDay" aria-label="Next day">›</button>
+    <button class="nav" id="nextDay" aria-label="Next day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
 </header>
 
@@ -132,14 +178,14 @@
     <div class="row total"><span>Total Gave</span><span class="amt gave" id="totalGave"></span></div>
   </section>
 
-  <section class="card">
+  <section class="card hero">
     <div class="balance">
       <div class="lbl">Balance<small>Total Got − Total Gave</small></div>
       <div class="amt" id="balance"></div>
     </div>
   </section>
 
-  <section class="card">
+  <section class="card shop">
     <h2 class="h-shop"><span>Shop</span></h2>
     <div class="sub">Shop Got</div>
     <div id="shopGotList"></div>
@@ -148,7 +194,7 @@
     <div id="shopGaveList"></div>
     <div class="row total"><span>Total Gave (Shop)</span><span class="amt gave" id="shopTotalGave"></span></div>
     <div class="row"><span>Previous Day Shop Balance</span><span class="amt" id="prevShop"></span></div>
-    <div class="balance" style="border-top:1px solid var(--line)">
+    <div class="balance shop-bal">
       <div class="lbl">Shop Balance<small>Got (Shop) − Gave (Shop) + Previous Balance</small></div>
       <div class="amt" id="shopBalance"></div>
     </div>
@@ -156,8 +202,8 @@
 </main>
 
 <div class="bottom">
-  <button class="b-got" id="addGot">+ You Got</button>
-  <button class="b-gave" id="addGave">+ You Gave</button>
+  <button class="b-got" id="addGot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>You Got</button>
+  <button class="b-gave" id="addGave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>You Gave</button>
 </div>
 
 <!-- Entry sheet -->
@@ -176,8 +222,10 @@
     <div class="seg" id="shopSeg">
       <button data-v="0">Daily</button><button data-v="1">Shop</button>
     </div>
-    <label class="check"><input type="checkbox" id="fException"><span>Exception</span></label>
-    <label class="check" id="excludeRow"><input type="checkbox" id="fExclude"><span>Exclude</span></label>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="fException"><span>Exception</span></label>
+      <label class="check" id="excludeRow"><input type="checkbox" id="fExclude"><span>Exclude</span></label>
+    </div>
     <label class="f">Date</label>
     <input type="date" id="fDate">
     <div class="actions">
