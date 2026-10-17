@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Cash Book</title>
+<meta name="theme-color" content="#14532d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cash Book">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#f6f4ee; --card:#ffffff; --ink:#1c1f1a; --muted:#6b7064; --line:#e6e2d6;
+    --got:#15803d; --got-bg:#e9f6ee; --gave:#c2410c; --gave-bg:#fdf0e8;
+    --brand:#14532d; --shop:#1d4ed8; --shop-bg:#eaf0fd;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+  header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;
+    padding:calc(10px + env(safe-area-inset-top)) 16px 12px}
+  .top{display:flex;align-items:center;justify-content:space-between}
+  .top h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.2px}
+  .ghost{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:10px;
+    padding:8px 12px;font:600 14px inherit;font-family:inherit}
+  .datebar{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .datebar button.nav{width:40px;height:40px;border-radius:10px;border:0;
+    background:rgba(255,255,255,.15);color:#fff;font-size:20px}
+  .datebox{flex:1;position:relative;height:40px;border-radius:10px;background:#fff;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;font-weight:600}
+  .datebox input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+  .today-chip{font-size:12px;color:var(--got);margin-left:6px;font-weight:600}
+  main{padding:12px 16px;max-width:640px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+  .card h2{margin:0;padding:10px 14px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;
+    display:flex;justify-content:space-between;align-items:center}
+  .h-got{background:var(--got-bg);color:var(--got)}
+  .h-gave{background:var(--gave-bg);color:var(--gave)}
+  .h-shop{background:var(--shop-bg);color:var(--shop)}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:11px 14px;border-top:1px solid var(--line)}
+  .row.entry{cursor:pointer}
+  .row.entry:active{background:#f3f2ec}
+  .row .note{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .note small{display:block;color:var(--muted);font-size:12px}
+  .amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .got{color:var(--got)} .gave{color:var(--gave)}
+  .total{font-weight:700;background:#faf9f5}
+  .empty{padding:12px 14px;color:var(--muted);border-top:1px solid var(--line);font-size:14px}
+  .sub{padding:8px 14px;font-size:12px;font-weight:700;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--line);background:#fcfbf8}
+  .balance{padding:16px 14px;display:flex;justify-content:space-between;align-items:center}
+  .balance .lbl{font-weight:700;font-size:16px}
+  .balance .lbl small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+  .balance .amt{font-size:22px}
+  .bottom{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:10px;
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
+  .bottom button{flex:1;height:52px;border:0;border-radius:12px;color:#fff;font:700 16px inherit;font-family:inherit}
+  .b-got{background:var(--got)} .b-gave{background:var(--gave)}
+  .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:10;display:none}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;background:#fff;border-radius:18px 18px 0 0;
+    padding:16px 16px calc(16px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .2s ease,visibility .2s;visibility:hidden;
+    max-width:640px;margin:0 auto}
+  .open .sheet-bg{display:block}
+  .open .sheet{transform:none;visibility:visible}
+  .sheet h3{margin:0 0 12px;font-size:18px}
+  label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+  .sheet input[type=text],.sheet input[type=number],.sheet input[type=date]{width:100%;height:46px;
+    border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:17px;font-family:inherit;background:#fff;color:var(--ink)}
+  .seg{display:flex;background:#f1efe8;border-radius:10px;padding:3px;gap:3px}
+  .seg button{flex:1;height:38px;border:0;border-radius:8px;background:transparent;font:600 14px inherit;font-family:inherit;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .actions{display:flex;gap:10px;margin-top:16px}
+  .actions button{flex:1;height:48px;border-radius:12px;border:0;font:700 16px inherit;font-family:inherit}
+  .save{background:var(--brand);color:#fff}
+  .cancel{background:#f1efe8;color:var(--ink)}
+  .del{background:#fde8e8;color:#b91c1c}
+  .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--shop);background:var(--shop-bg);
+    border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>Cash Book</h1>
+    <button class="ghost" id="exportBtn">Export</button>
+  </div>
+  <div class="datebar">
+    <button class="nav" id="prevDay" aria-label="Previous day">‹</button>
+    <div class="datebox"><span id="dateLabel"></span><input type="date" id="datePick"></div>
+    <button class="nav" id="nextDay" aria-label="Next day">›</button>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2 class="h-got"><span>You Got</span></h2>
+    <div id="gotList"></div>
+    <div class="row total"><span>Total Got</span><span class="amt got" id="totalGot"></span></div>
+  </section>
+
+  <section class="card">
+    <h2 class="h-gave"><span>You Gave</span></h2>
+    <div id="gaveList"></div>
+    <div class="row total"><span>Total Gave</span><span class="amt gave" id="totalGave"></span></div>
+  </section>
+
+  <section class="card">
+    <div class="balance">
+      <div class="lbl">Balance<small>Total Got − Total Gave</small></div>
+      <div class="amt" id="balance"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="h-shop"><span>Shop</span></h2>
+    <div class="sub">Shop Got</div>
+    <div id="shopGotList"></div>
+    <div class="row total"><span>Total Got (Shop)</span><span class="amt got" id="shopTotalGot"></span></div>
+    <div class="sub">Shop Gave</div>
+    <div id="shopGaveList"></div>
+    <div class="row total"><span>Total Gave (Shop)</span><span class="amt gave" id="shopTotalGave"></span></div>
+    <div class="row"><span>Previous Day Shop Balance</span><span class="amt" id="prevShop"></span></div>
+    <div class="balance" style="border-top:1px solid var(--line)">
+      <div class="lbl">Shop Balance<small>Got (Shop) − Gave (Shop) + Previous Balance</small></div>
+      <div class="amt" id="shopBalance"></div>
+    </div>
+  </section>
+</main>
+
+<div class="bottom">
+  <button class="b-got" id="addGot">+ You Got</button>
+  <button class="b-gave" id="addGave">+ You Gave</button>
+</div>
+
+<!-- Entry sheet -->
+<div id="entryWrap">
+  <div class="sheet-bg" data-close></div>
+  <div class="sheet">
+    <h3 id="entryTitle">New Entry</h3>
+    <div class="seg" id="typeSeg">
+      <button data-v="got">You Got</button><button data-v="gave">You Gave</button>
+    </div>
+    <label class="f">Amount (Rs)</label>
+    <input type="number" inputmode="decimal" id="fAmount" placeholder="0">
+    <label class="f">Detail</label>
+    <input type="text" id="fNote" placeholder="Name or description">
+    <label class="f">Entry for</label>
+    <div class="seg" id="shopSeg">
+      <button data-v="0">Daily</button><button data-v="1">Shop</button>
+    </div>
+    <label class="f">Date</label>
+    <input type="date" id="fDate">
+    <div class="actions">
+      <button class="del" id="delBtn">Delete</button>
+      <button class="cancel" data-close>Cancel</button>
+      <button class="save" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export sheet -->
+<div id="exportWrap">
+  <div class="sheet-bg" data-close></div>
+  <div class="sheet">
+    <h3>Export Entries</h3>
+    <label class="f">From</label>
+    <input type="date" id="exFrom">
+    <label class="f">To</label>
+    <input type="date" id="exTo">
+    <div class="hint">Saves a CSV file that opens in Excel, Numbers or Google Sheets.</div>
+    <div class="actions">
+      <button class="cancel" data-close>Cancel</button>
+      <button class="save" id="doExport">Export</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Database (IndexedDB, stored on the phone) ---------- */
+const DB_NAME = 'cashbook', STORE = 'entries';
+let db;
+function openDB(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = () => {
+      const s = r.result.createObjectStore(STORE, { keyPath: 'id' });
+      s.createIndex('date', 'date');
+    };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function tx(mode){ return db.transaction(STORE, mode).objectStore(STORE); }
+function req(r){ return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+const putEntry = e => req(tx('readwrite').put(e));
+const delEntry = id => req(tx('readwrite').delete(id));
+const getRange = (from, to) => req(tx('readonly').index('date').getAll(IDBKeyRange.bound(from, to)));
+const getBefore = d => req(tx('readonly').index('date').getAll(IDBKeyRange.upperBound(d, true)));
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayISO = () => toISO(new Date());
+const addDays = (iso, n) => { const [y,m,d] = iso.split('-').map(Number); return toISO(new Date(y, m-1, d+n)); };
+const fmt = n => 'Rs ' + Number(n).toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const sum = arr => arr.reduce((a, e) => a + Number(e.amount), 0);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function niceDate(iso){
+  const [y,m,d] = iso.split('-').map(Number);
+  return new Date(y, m-1, d).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+}
+const byTime = (a, b) => a.createdAt - b.createdAt;
+
+/* ---------- State & render ---------- */
+let current = todayISO();
+
+function listHTML(items, cls, tagShop){
+  if (!items.length) return '<div class="empty">No entries</div>';
+  return items.map(e => `
+    <div class="row entry" data-id="${e.id}">
+      <div class="note">${esc(e.note || '—')}${tagShop && e.shop ? ' <span class="tag">Shop</span>' : ''}</div>
+      <div class="amt ${cls}">${fmt(e.amount)}</div>
+    </div>`).join('');
+}
+function setBal(el, v){
+  el.textContent = fmt(v);
+  el.className = 'amt ' + (v < 0 ? 'gave' : 'got');
+}
+
+let dayEntries = [];
+async function render(){
+  $('dateLabel').innerHTML = esc(niceDate(current)) + (current === todayISO() ? '<span class="today-chip">Today</span>' : '');
+  $('datePick').value = current;
+
+  dayEntries = (await getRange(current, current)).sort(byTime);
+  const shop = dayEntries.filter(e => e.shop);
+  // Top section counts all entries (Daily + Shop)
+  const got = dayEntries.filter(e => e.type === 'got'), gave = dayEntries.filter(e => e.type === 'gave');
+  const sGot = shop.filter(e => e.type === 'got'), sGave = shop.filter(e => e.type === 'gave');
+
+  $('gotList').innerHTML = listHTML(got, 'got', true);
+  $('gaveList').innerHTML = listHTML(gave, 'gave', true);
+  const tg = sum(got), tv = sum(gave);
+  $('totalGot').textContent = fmt(tg);
+  $('totalGave').textContent = fmt(tv);
+  setBal($('balance'), tg - tv);
+
+  $('shopGotList').innerHTML = listHTML(sGot, 'got');
+  $('shopGaveList').innerHTML = listHTML(sGave, 'gave');
+  const stg = sum(sGot), stv = sum(sGave);
+  $('shopTotalGot').textContent = fmt(stg);
+  $('shopTotalGave').textContent = fmt(stv);
+
+  // Previous day shop balance = all shop Got − shop Gave before this date (carried forward)
+  const prior = (await getBefore(current)).filter(e => e.shop);
+  const prev = sum(prior.filter(e => e.type === 'got')) - sum(prior.filter(e => e.type === 'gave'));
+  setBal($('prevShop'), prev);
+  setBal($('shopBalance'), stg - stv + prev);
+}
+
+/* ---------- Date navigation ---------- */
+$('prevDay').onclick = () => { current = addDays(current, -1); render(); };
+$('nextDay').onclick = () => { current = addDays(current, 1); render(); };
+$('datePick').onchange = e => { if (e.target.value) { current = e.target.value; render(); } };
+
+/* ---------- Sheets ---------- */
+function openSheet(id){ $(id).classList.add('open'); }
+function closeSheets(){ document.querySelectorAll('.open').forEach(x => x.classList.remove('open')); }
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeSheets);
+
+function setSeg(segId, val){
+  document.querySelectorAll(`#${segId} button`).forEach(b => b.classList.toggle('on', b.dataset.v === String(val)));
+}
+function segVal(segId){ return document.querySelector(`#${segId} button.on`).dataset.v; }
+['typeSeg', 'shopSeg'].forEach(s => document.querySelectorAll(`#${s} button`).forEach(b => b.onclick = () => setSeg(s, b.dataset.v)));
+
+let editing = null;
+function openEntry(type, entry){
+  editing = entry || null;
+  $('entryTitle').textContent = entry ? 'Edit Entry' : 'New Entry';
+  setSeg('typeSeg', entry ? entry.type : type);
+  setSeg('shopSeg', entry && entry.shop ? 1 : 0);
+  $('fAmount').value = entry ? entry.amount : '';
+  $('fNote').value = entry ? entry.note : '';
+  $('fDate').value = entry ? entry.date : current;
+  $('delBtn').style.display = entry ? '' : 'none';
+  openSheet('entryWrap');
+  if (!entry) setTimeout(() => $('fAmount').focus(), 250);
+}
+$('addGot').onclick = () => openEntry('got');
+$('addGave').onclick = () => openEntry('gave');
+document.querySelector('main').addEventListener('click', e => {
+  const row = e.target.closest('.entry');
+  if (row) openEntry(null, dayEntries.find(x => x.id === row.dataset.id));
+});
+
+$('saveBtn').onclick = async () => {
+  const amount = parseFloat($('fAmount').value);
+  if (!(amount > 0)) { alert('Please enter an amount.'); return; }
+  const date = $('fDate').value || current;
+  const e = {
+    id: editing ? editing.id : (Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
+    createdAt: editing ? editing.createdAt : Date.now(),
+    date, amount, note: $('fNote').value.trim(),
+    type: segVal('typeSeg'), shop: segVal('shopSeg') === '1'
+  };
+  await putEntry(e);
+  closeSheets();
+  current = date;
+  render();
+};
+$('delBtn').onclick = async () => {
+  if (!editing || !confirm('Delete this entry?')) return;
+  await delEntry(editing.id);
+  closeSheets();
+  render();
+};
+
+/* ---------- Export (CSV) ---------- */
+$('exportBtn').onclick = () => {
+  $('exFrom').value = current; $('exTo').value = current;
+  openSheet('exportWrap');
+};
+const csvCell = v => { const s = String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+$('doExport').onclick = async () => {
+  let from = $('exFrom').value, to = $('exTo').value;
+  if (!from || !to) { alert('Please choose both dates.'); return; }
+  if (from > to) [from, to] = [to, from];
+
+  const entries = (await getRange(from, to)).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : byTime(a, b));
+  const prior = (await getBefore(from)).filter(e => e.shop);
+  let shopRun = sum(prior.filter(e => e.type === 'got')) - sum(prior.filter(e => e.type === 'gave'));
+
+  const rows = [['Date', 'Section', 'Type', 'Detail', 'Amount']];
+  entries.forEach(e => rows.push([e.date, e.shop ? 'Shop' : 'Daily', e.type === 'got' ? 'You Got' : 'You Gave', e.note, e.amount]));
+
+  rows.push([], ['Daily Summary'],
+    ['Date', 'Total Got', 'Total Gave', 'Balance', 'Shop Got', 'Shop Gave', 'Previous Shop Balance', 'Shop Balance']);
+  for (let d = from; d <= to; d = addDays(d, 1)) {
+    const de = entries.filter(e => e.date === d);
+    const g = sum(de.filter(e => e.type === 'got')), v = sum(de.filter(e => e.type === 'gave'));
+    const sg = sum(de.filter(e => e.shop && e.type === 'got')), sv = sum(de.filter(e => e.shop && e.type === 'gave'));
+    const prevBal = shopRun; shopRun = shopRun + sg - sv;
+    if (de.length) rows.push([d, g, v, g - v, sg, sv, prevBal, shopRun]);
+  }
+
+  const csv = '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+  const name = from === to ? `cashbook-${from}.csv` : `cashbook-${from}-to-${to}.csv`;
+  const file = new File([csv], name, { type: 'text/csv' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: name });
+      closeSheets(); return;
+    }
+  } catch (err) { if (err.name === 'AbortError') return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  closeSheets();
+};
+
+/* ---------- Start ---------- */
+(async () => {
+  db = await openDB();
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  render();
+})();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
