@@ -82,6 +82,16 @@
   .del{background:#fde8e8;color:#b91c1c}
   .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--shop);background:var(--shop-bg);
     border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+  .ex-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;
+    background:#f3efe2;color:#7a5b00;padding:12px 14px;font:700 14px inherit;font-family:inherit;
+    text-transform:uppercase;letter-spacing:.6px}
+  .ex-toggle .count{display:inline-block;min-width:22px;margin-left:6px;padding:1px 7px;border-radius:10px;
+    background:#7a5b00;color:#fff;font-size:12px;letter-spacing:0;text-align:center}
+  .check{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-weight:600}
+  .check input{width:22px;height:22px;margin:0;flex:none;accent-color:var(--brand)}
+  .check small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+  .sheet input[type=date]{display:block;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;text-align:left}
+  .sheet{overflow-x:hidden}
   .hint{font-size:12px;color:var(--muted);margin-top:8px}
 </style>
 </head>
@@ -99,6 +109,16 @@
 </header>
 
 <main>
+  <section class="card" id="exCard">
+    <button class="ex-toggle" id="exToggle">
+      <span>Exception <span class="count" id="exCount">0</span></span>
+      <span class="chev" id="exChev">▾</span>
+    </button>
+    <div id="exBody" hidden>
+      <div id="exList"></div>
+    </div>
+  </section>
+
   <section class="card">
     <h2 class="h-got"><span>You Got</span></h2>
     <div id="gotList"></div>
@@ -155,6 +175,8 @@
     <div class="seg" id="shopSeg">
       <button data-v="0">Daily</button><button data-v="1">Shop</button>
     </div>
+    <label class="check"><input type="checkbox" id="fException"><span>Exception<small>Hidden from You Got, You Gave &amp; Shop lists; still counts in totals</small></span></label>
+    <label class="check" id="excludeRow"><input type="checkbox" id="fExclude"><span>Exclude<small>Not in You Got / You Gave and not in Total Got, Total Gave &amp; Balance</small></span></label>
     <label class="f">Date</label>
     <input type="date" id="fDate">
     <div class="actions">
@@ -235,26 +257,44 @@ function setBal(el, v){
   el.className = 'amt ' + (v < 0 ? 'gave' : 'got');
 }
 
+const topCounts = e => !(e.shop && e.exclude);   // counts in Total Got / Total Gave / Balance
 let dayEntries = [];
+$('exToggle').onclick = () => {
+  const b = $('exBody'); b.hidden = !b.hidden;
+  $('exChev').textContent = b.hidden ? '▾' : '▴';
+};
 async function render(){
   $('dateLabel').innerHTML = esc(niceDate(current)) + (current === todayISO() ? '<span class="today-chip">Today</span>' : '');
   $('datePick').value = current;
 
   dayEntries = (await getRange(current, current)).sort(byTime);
-  const shop = dayEntries.filter(e => e.shop);
-  // Top section counts all entries (Daily + Shop)
-  const got = dayEntries.filter(e => e.type === 'got'), gave = dayEntries.filter(e => e.type === 'gave');
-  const sGot = shop.filter(e => e.type === 'got'), sGave = shop.filter(e => e.type === 'gave');
+  const isGot = e => e.type === 'got', isGave = e => e.type === 'gave';
 
-  $('gotList').innerHTML = listHTML(got, 'got', true);
-  $('gaveList').innerHTML = listHTML(gave, 'gave', true);
+  // Exception: hidden from lists, still counted in totals
+  const ex = dayEntries.filter(e => e.exception);
+  $('exCount').textContent = ex.length;
+  $('exList').innerHTML = ex.length ? ex.map(e => `
+    <div class="row entry" data-id="${e.id}">
+      <div class="note">${esc(e.note || '—')}${e.shop ? ' <span class="tag">Shop</span>' : ''}${e.exclude ? ' <span class="tag">Exclude</span>' : ''}
+        <small>${isGot(e) ? 'You Got' : 'You Gave'}</small></div>
+      <div class="amt ${e.type}">${fmt(e.amount)}</div>
+    </div>`).join('') : '<div class="empty">No exception entries</div>';
+
+  // Top section: everything except Shop entries marked Exclude
+  const top = dayEntries.filter(topCounts);
+  const got = top.filter(isGot), gave = top.filter(isGave);
+  $('gotList').innerHTML = listHTML(got.filter(e => !e.exception), 'got', true);
+  $('gaveList').innerHTML = listHTML(gave.filter(e => !e.exception), 'gave', true);
   const tg = sum(got), tv = sum(gave);
   $('totalGot').textContent = fmt(tg);
   $('totalGave').textContent = fmt(tv);
   setBal($('balance'), tg - tv);
 
-  $('shopGotList').innerHTML = listHTML(sGot, 'got');
-  $('shopGaveList').innerHTML = listHTML(sGave, 'gave');
+  // Shop section: all shop entries count; exceptions are not listed
+  const shop = dayEntries.filter(e => e.shop);
+  const sGot = shop.filter(isGot), sGave = shop.filter(isGave);
+  $('shopGotList').innerHTML = listHTML(sGot.filter(e => !e.exception), 'got');
+  $('shopGaveList').innerHTML = listHTML(sGave.filter(e => !e.exception), 'gave');
   const stg = sum(sGot), stv = sum(sGave);
   $('shopTotalGot').textContent = fmt(stg);
   $('shopTotalGave').textContent = fmt(stv);
@@ -280,7 +320,13 @@ function setSeg(segId, val){
   document.querySelectorAll(`#${segId} button`).forEach(b => b.classList.toggle('on', b.dataset.v === String(val)));
 }
 function segVal(segId){ return document.querySelector(`#${segId} button.on`).dataset.v; }
-['typeSeg', 'shopSeg'].forEach(s => document.querySelectorAll(`#${s} button`).forEach(b => b.onclick = () => setSeg(s, b.dataset.v)));
+['typeSeg', 'shopSeg'].forEach(s => document.querySelectorAll(`#${s} button`).forEach(b => b.onclick = () => { setSeg(s, b.dataset.v); syncExclude(); }));
+// Exclude only applies to Shop entries
+function syncExclude(){
+  const isShop = segVal('shopSeg') === '1';
+  $('excludeRow').style.display = isShop ? '' : 'none';
+  if (!isShop) $('fExclude').checked = false;
+}
 
 let editing = null;
 function openEntry(type, entry){
@@ -291,6 +337,9 @@ function openEntry(type, entry){
   $('fAmount').value = entry ? entry.amount : '';
   $('fNote').value = entry ? entry.note : '';
   $('fDate').value = entry ? entry.date : current;
+  $('fException').checked = !!(entry && entry.exception);
+  $('fExclude').checked = !!(entry && entry.exclude);
+  syncExclude();
   $('delBtn').style.display = entry ? '' : 'none';
   openSheet('entryWrap');
   if (!entry) setTimeout(() => $('fAmount').focus(), 250);
@@ -310,8 +359,10 @@ $('saveBtn').onclick = async () => {
     id: editing ? editing.id : (Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
     createdAt: editing ? editing.createdAt : Date.now(),
     date, amount, note: $('fNote').value.trim(),
-    type: segVal('typeSeg'), shop: segVal('shopSeg') === '1'
+    type: segVal('typeSeg'), shop: segVal('shopSeg') === '1',
+    exception: $('fException').checked
   };
+  e.exclude = e.shop && $('fExclude').checked;
   await putEntry(e);
   closeSheets();
   current = date;
@@ -339,14 +390,15 @@ $('doExport').onclick = async () => {
   const prior = (await getBefore(from)).filter(e => e.shop);
   let shopRun = sum(prior.filter(e => e.type === 'got')) - sum(prior.filter(e => e.type === 'gave'));
 
-  const rows = [['Date', 'Section', 'Type', 'Detail', 'Amount']];
-  entries.forEach(e => rows.push([e.date, e.shop ? 'Shop' : 'Daily', e.type === 'got' ? 'You Got' : 'You Gave', e.note, e.amount]));
+  const rows = [['Date', 'Section', 'Type', 'Detail', 'Amount', 'Exception', 'Exclude']];
+  entries.forEach(e => rows.push([e.date, e.shop ? 'Shop' : 'Daily', e.type === 'got' ? 'You Got' : 'You Gave', e.note, e.amount,
+    e.exception ? 'Yes' : '', e.exclude ? 'Yes' : '']));
 
   rows.push([], ['Daily Summary'],
     ['Date', 'Total Got', 'Total Gave', 'Balance', 'Shop Got', 'Shop Gave', 'Previous Shop Balance', 'Shop Balance']);
   for (let d = from; d <= to; d = addDays(d, 1)) {
     const de = entries.filter(e => e.date === d);
-    const g = sum(de.filter(e => e.type === 'got')), v = sum(de.filter(e => e.type === 'gave'));
+    const g = sum(de.filter(e => topCounts(e) && e.type === 'got')), v = sum(de.filter(e => topCounts(e) && e.type === 'gave'));
     const sg = sum(de.filter(e => e.shop && e.type === 'got')), sv = sum(de.filter(e => e.shop && e.type === 'gave'));
     const prevBal = shopRun; shopRun = shopRun + sg - sv;
     if (de.length) rows.push([d, g, v, g - v, sg, sv, prevBal, shopRun]);
