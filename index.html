@@ -138,6 +138,20 @@
   .save{background:var(--navy);color:#fff}
   .cancel{background:#eef2f6;color:var(--ink)}
   .del{background:var(--gave-soft);color:var(--gave)}
+  .tabs{display:flex;gap:4px;margin:14px auto 0;max-width:640px;background:var(--navy2);border-radius:12px;padding:4px}
+  .tabs button{flex:1;height:38px;border:0;border-radius:9px;background:transparent;color:#bcccdc;font-size:15px;font-weight:600}
+  .tabs button.on{background:#fff;color:var(--ink)}
+  .view[hidden],.datebar[hidden],.bottom[hidden]{display:none}
+  .pbar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .pbar .seg{flex:1}
+  .pnav{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .pnav button{width:44px;height:44px;border-radius:12px;border:0;background:var(--card);color:var(--ink);display:grid;place-items:center;
+    box-shadow:0 0 0 1px rgba(16,42,67,.08)}
+  .pnav button svg{width:20px;height:20px}
+  .plabel{flex:1;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;
+    font-weight:600;box-shadow:0 0 0 1px rgba(16,42,67,.08)}
+  .daygrp{padding:10px 16px 4px;font-size:14px;font-weight:600;color:var(--muted);border-top:1px solid var(--line)}
+  .stats .row .amt{font-size:18px}
   .tag{display:inline-block;font-size:12px;font-weight:600;color:var(--shop);background:var(--shop-soft);
     border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px}
 </style>
@@ -148,6 +162,9 @@
     <h1>Cash Book</h1>
     <button class="wa" id="waBtn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3z"/></svg>WhatsApp</button>
   </div>
+  <nav class="tabs" id="tabs">
+    <button data-v="book" class="on">Cash Book</button><button data-v="exp">Expenses</button><button data-v="rep">Report</button>
+  </nav>
   <div class="datebar">
     <button class="nav" id="prevDay" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="datebox"><span id="dateLabel"></span><input type="date" id="datePick"></div>
@@ -155,7 +172,7 @@
   </div>
 </header>
 
-<main>
+<main class="view" id="view-book">
   <section class="card" id="exCard">
     <button class="ex-toggle" id="exToggle">
       <span>Exception <span class="count" id="exCount">0</span></span>
@@ -201,7 +218,31 @@
   </section>
 </main>
 
-<div class="bottom">
+<main class="view" id="view-exp" hidden>
+  <div class="seg pseg" id="expSeg" style="margin-bottom:14px">
+    <button data-v="week" class="on">Weekly</button><button data-v="month">Monthly</button>
+  </div>
+  <div class="pnav">
+    <button id="expPrev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="plabel" id="expLabel"></div>
+    <button id="expNext" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+  <div id="expBody"></div>
+</main>
+
+<main class="view" id="view-rep" hidden>
+  <div class="seg pseg" id="repSeg" style="margin-bottom:14px">
+    <button data-v="week" class="on">Weekly</button><button data-v="month">Monthly</button>
+  </div>
+  <div class="pnav">
+    <button id="repPrev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="plabel" id="repLabel"></div>
+    <button id="repNext" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+  <div id="repBody"></div>
+</main>
+
+<div class="bottom" id="bottomBar">
   <button class="b-got" id="addGot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>You Got</button>
   <button class="b-gave" id="addGave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>You Gave</button>
 </div>
@@ -225,6 +266,9 @@
     <div class="checks">
       <label class="check"><input type="checkbox" id="fException"><span>Exception</span></label>
       <label class="check" id="excludeRow"><input type="checkbox" id="fExclude"><span>Exclude</span></label>
+    </div>
+    <div class="checks" id="expenseRow">
+      <label class="check"><input type="checkbox" id="fExpense"><span>Expense</span></label>
     </div>
     <label class="f">Date</label>
     <input type="date" id="fDate">
@@ -381,6 +425,10 @@ function syncExclude(){
   const isShop = segVal('shopSeg') === '1';
   $('excludeRow').style.display = isShop ? '' : 'none';
   if (!isShop) $('fExclude').checked = false;
+  // Expense only applies to You Gave entries
+  const isGave = segVal('typeSeg') === 'gave';
+  $('expenseRow').style.display = isGave ? '' : 'none';
+  if (!isGave) $('fExpense').checked = false;
 }
 
 let editing = null;
@@ -394,6 +442,7 @@ function openEntry(type, entry){
   $('fDate').value = entry ? entry.date : current;
   $('fException').checked = !!(entry && entry.exception);
   $('fExclude').checked = !!(entry && entry.exclude);
+  $('fExpense').checked = !!(entry && entry.expense);
   syncExclude();
   $('delBtn').style.display = entry ? '' : 'none';
   openSheet('entryWrap');
@@ -418,31 +467,114 @@ $('saveBtn').onclick = async () => {
     exception: $('fException').checked
   };
   e.exclude = e.shop && $('fExclude').checked;
+  e.expense = e.type === 'gave' && $('fExpense').checked;
   await putEntry(e);
   closeSheets();
   current = date;
-  render();
+  render(); renderPeriods();
 };
 $('delBtn').onclick = async () => {
   if (!editing || !confirm('Delete this entry?')) return;
   await delEntry(editing.id);
   closeSheets();
-  render();
+  render(); renderPeriods();
 };
 
 /* ---------- WhatsApp (selected date) ---------- */
-$('waBtn').onclick = () => {
-  const t = encodeURIComponent(waText);
-  location.href = 'whatsapp://send?text=' + t;
-  // If WhatsApp did not open, use the web link instead
-  setTimeout(() => { if (!document.hidden) location.href = 'https://wa.me/?text=' + t; }, 1500);
-};
+// Opens the iPhone share menu so you can pick normal WhatsApp (not Business)
+async function shareText(text){
+  if (navigator.share) {
+    try { await navigator.share({ text }); } catch (err) {}
+    return;
+  }
+  try { await navigator.clipboard.writeText(text); alert('Copied. Paste it in WhatsApp.'); }
+  catch (err) { prompt('Copy this text:', text); }
+}
+$('waBtn').onclick = () => shareText(tab === 'book' ? waText : tab === 'exp' ? expText : repText);
+
+/* ---------- Tabs ---------- */
+let tab = 'book';
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  tab = b.dataset.v;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  ['book', 'exp', 'rep'].forEach(k => $('view-' + k).hidden = k !== tab);
+  document.querySelector('.datebar').hidden = tab !== 'book';
+  $('bottomBar').hidden = tab !== 'book';
+  if (tab !== 'book') renderPeriods();
+  window.scrollTo(0, 0);
+});
+
+/* ---------- Weekly / Monthly periods (week = Monday to Sunday) ---------- */
+const parse = iso => { const [y,m,d] = iso.split('-').map(Number); return new Date(y, m-1, d); };
+function periodOf(kind, offset){
+  const t = parse(todayISO());
+  if (kind === 'week') {
+    const mon = new Date(t.getFullYear(), t.getMonth(), t.getDate() - ((t.getDay() + 6) % 7) + offset * 7);
+    const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+    const f = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+    return { from: toISO(mon), to: toISO(sun), label: `${f(mon)} – ${f(sun)} ${sun.getFullYear()}`,
+      title: offset === 0 ? 'This week' : offset === -1 ? 'Last week' : '' };
+  }
+  const first = new Date(t.getFullYear(), t.getMonth() + offset, 1);
+  const last = new Date(first.getFullYear(), first.getMonth() + 1, 0);
+  return { from: toISO(first), to: toISO(last),
+    label: first.toLocaleDateString('en-GB', { month:'long', year:'numeric' }),
+    title: offset === 0 ? 'This month' : offset === -1 ? 'Last month' : '' };
+}
+const pstate = { exp: { kind: 'week', off: 0 }, rep: { kind: 'week', off: 0 } };
+['exp', 'rep'].forEach(k => {
+  document.querySelectorAll(`#${k}Seg button`).forEach(b => b.onclick = () => {
+    document.querySelectorAll(`#${k}Seg button`).forEach(x => x.classList.toggle('on', x === b));
+    pstate[k] = { kind: b.dataset.v, off: 0 }; renderPeriods();
+  });
+  $(k + 'Prev').onclick = () => { pstate[k].off--; renderPeriods(); };
+  $(k + 'Next').onclick = () => { pstate[k].off++; renderPeriods(); };
+});
+const shortDate = iso => parse(iso).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+let expText = '', repText = '';
+
+async function renderPeriods(){
+  /* Expenses */
+  const ep = periodOf(pstate.exp.kind, pstate.exp.off);
+  $('expLabel').textContent = ep.label;
+  const ex = (await getRange(ep.from, ep.to)).filter(e => e.expense)
+    .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : byTime(a, b));
+  const et = sum(ex), heading = pstate.exp.kind === 'week' ? 'Weekly Expenses' : 'Monthly Expenses';
+  let html = '', txt = [`*${heading} — ${ep.label}*`, ''], last = '';
+  ex.forEach(e => {
+    if (e.date !== last) {
+      last = e.date;
+      html += `<div class="daygrp">${esc(shortDate(e.date))}</div>`;
+      txt.push(`_${shortDate(e.date)}_`);
+    }
+    html += `<div class="row"><div class="note">${esc(e.note || '—')}${e.shop ? ' <span class="tag">Shop</span>' : ''}</div><div class="amt gave">${fmt(e.amount)}</div></div>`;
+    txt.push(`${e.note || '—'}${e.shop ? ' (Shop)' : ''}: ${fmt(e.amount)}`);
+  });
+  if (!ex.length) { html = '<div class="empty">No expenses in this period</div>'; txt.push('No expenses'); }
+  $('expBody').innerHTML = `<section class="card"><h2 class="h-gave"><span>${heading}</span></h2>${html}
+    <div class="row total"><span>Total Expenses</span><span class="amt gave">${fmt(et)}</span></div></section>`;
+  txt.push('', `*Total Expenses: ${fmt(et)}*`);
+  expText = txt.join('\n');
+
+  /* Report: same totals as the top of the Cash Book */
+  const rp = periodOf(pstate.rep.kind, pstate.rep.off);
+  $('repLabel').textContent = rp.label;
+  const top = (await getRange(rp.from, rp.to)).filter(topCounts);
+  const g = sum(top.filter(e => e.type === 'got')), v = sum(top.filter(e => e.type === 'gave'));
+  const rh = pstate.rep.kind === 'week' ? 'Weekly Report' : 'Monthly Report';
+  $('repBody').innerHTML = `<section class="card stats"><h2 class="h-got"><span>${rh}</span></h2>
+      <div class="row"><span>Total Got</span><span class="amt got">${fmt(g)}</span></div>
+      <div class="row"><span>Total Gave</span><span class="amt gave">${fmt(v)}</span></div></section>
+    <section class="card hero"><div class="balance"><div class="lbl">Balance<small>Total Got − Total Gave</small></div>
+      <div class="amt ${g - v < 0 ? 'gave' : 'got'}">${fmt(g - v)}</div></div></section>`;
+  repText = [`*${rh} — ${rp.label}*`, '', `Total Got: ${fmt(g)}`, `Total Gave: ${fmt(v)}`, '', `*Balance: ${fmt(g - v)}*`].join('\n');
+}
 
 /* ---------- Start ---------- */
 (async () => {
   db = await openDB();
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
-  render();
+  render(); renderPeriods();
 })();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 </script>
