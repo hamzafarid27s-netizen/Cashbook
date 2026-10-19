@@ -80,9 +80,8 @@
   .card.hero .lbl small{color:#9fb3c8}
   .card.hero .amt.got{color:#5ee0a8} .card.hero .amt.gave{color:#ff8a7a}
   .card.hero .amt{font-size:30px}
-  .card.hero .prevbal{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px 12px;
-    border-bottom:1px solid rgba(255,255,255,.12);color:#bcccdc;font-size:15px;font-weight:600}
-  .card.hero .prevbal .amt{font-size:18px}
+  .prevrow{border-top:0;padding:16px;font-weight:700;font-size:17px}
+  .prevrow .amt{font-size:19px}
 
   /* Shop */
   .shop-bal{border-top:1px solid var(--line);background:var(--shop-soft)}
@@ -217,6 +216,10 @@
   </section>
 
   <section class="card">
+    <div class="row prevrow"><span>Previous Day Balance</span><span class="amt" id="prevBal"></span></div>
+  </section>
+
+  <section class="card">
     <h2 class="h-got"><span>You Got</span></h2>
     <div id="gotList"></div>
     <div class="row total"><span>Total Got</span><span class="amt got" id="totalGot"></span></div>
@@ -229,7 +232,6 @@
   </section>
 
   <section class="card hero">
-    <div class="prevbal"><span>Previous Day Balance</span><span class="amt" id="prevBal"></span></div>
     <div class="balance">
       <div class="lbl">Balance<small>Total Got + Previous Day Balance − Total Gave</small></div>
       <div class="amt" id="balance"></div>
