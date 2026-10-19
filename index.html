@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>Cash Book</title>
-<meta name="theme-color" content="#102a43">
+<meta name="theme-color" content="#2e2a7a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,10 +14,10 @@
 <link rel="icon" href="icon-192.png">
 <style>
   :root{
-    --bg:#eef2f6; --card:#ffffff; --ink:#0f2236; --muted:#5f7186; --line:#e1e7ee; --line2:#c9d3de;
-    --navy:#102a43; --navy2:#1c3d5e;
+    --bg:#f3f4f9; --card:#ffffff; --ink:#171a2f; --muted:#646a85; --line:#e6e8f0; --line2:#d3d6e4;
+    --navy:#2e2a7a; --navy2:#413c99; --accent:#4f46e5; --accent-soft:#eef0ff;
     --got:#0b7a55; --got-soft:#e3f4ec; --gave:#c0392b; --gave-soft:#fbe9e6;
-    --shop:#3a4bc4; --shop-soft:#e8ebfb; --exc:#9a6200; --exc-soft:#fbf1dc;
+    --shop:#0b6aa8; --shop-soft:#e2f1fb; --exc:#9a6200; --exc-soft:#fbf1dc;
     --r:16px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -192,6 +192,83 @@
   .xrow:active{background:#f4f7fa}
   .tag{display:inline-block;font-size:12px;font-weight:600;color:var(--shop);background:var(--shop-soft);
     border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+
+  /* ===== Theme v2: clean forms ===== */
+  .tabs{background:rgba(255,255,255,.1)}
+  .tabs button{color:#cfd0f5}
+  .card.hero .lbl small{color:#b9b8ec}
+  .card.hero .amt.got{color:#7ef0bf}
+  .save{background:var(--accent);color:#fff}
+  .b-got{box-shadow:0 4px 12px rgba(11,122,85,.22)}
+  .sheet-bg{background:rgba(23,26,47,.5)}
+  .sheet{padding:8px 20px calc(20px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;
+    box-shadow:0 -10px 30px rgba(23,26,47,.18)}
+  .sheet::before{margin-bottom:6px;background:#d9dbe7}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin:6px 0 16px}
+  .sheet-head h3{margin:0;font-size:21px;font-weight:700;letter-spacing:-.4px}
+  .xclose{width:36px;height:36px;border:0;border-radius:18px;background:#f0f1f6;color:var(--muted);display:grid;place-items:center}
+  .xclose svg{width:18px;height:18px}
+
+  .seg{background:#f0f1f6;border-radius:14px;padding:4px}
+  .seg button{height:44px;border-radius:11px;font-size:15px}
+  .seg button.on{box-shadow:0 1px 3px rgba(23,26,47,.12)}
+  .typeseg button{display:flex;align-items:center;justify-content:center;gap:7px;height:48px;font-size:16px}
+  .typeseg button svg{width:18px;height:18px}
+  #typeSeg button[data-v=got].on{background:var(--got);color:#fff;box-shadow:0 4px 12px rgba(11,122,85,.25)}
+  #typeSeg button[data-v=gave].on{background:var(--gave);color:#fff;box-shadow:0 4px 12px rgba(192,57,43,.22)}
+
+  .amountbox{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:22px 0 6px;padding-bottom:14px;
+    border-bottom:2px solid var(--line)}
+  .amountbox:focus-within{border-color:var(--accent)}
+  .amountbox .cur{font-size:22px;font-weight:600;color:var(--muted)}
+  .sheet .amountbox input,#fAmount,#xAmount{border:0;outline:0;padding:0;height:auto;width:100%;max-width:240px;background:transparent;
+    font-size:44px;font-weight:700;letter-spacing:-1px;text-align:left;font-variant-numeric:tabular-nums;color:var(--ink)}
+  #entryWrap[data-type=got] #fAmount{color:var(--got)}
+  #entryWrap[data-type=gave] #fAmount,.gaveamt #xAmount{color:var(--gave)}
+  .amountbox input::placeholder{color:#c3c6d6}
+  .amountbox input::-webkit-outer-spin-button,.amountbox input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .amountbox input{-moz-appearance:textfield}
+
+  label.f{font-size:13px;font-weight:600;color:var(--muted);margin:16px 0 7px}
+  .sheet input[type=text],.selectbox,.addcat input{height:50px;border:1.5px solid var(--line);border-radius:14px;
+    background:#fafbfd;font-size:17px;padding:0 14px}
+  .sheet input[type=text]:focus,.selectbox:focus,.addcat input:focus{border-color:var(--accent);background:#fff;outline:none}
+  .selectbox{background:#fafbfd url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23646a85' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center/18px}
+
+  /* Grouped options with switches */
+  .opts{margin-top:16px;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:0 14px;
+    border-top:1px solid var(--line);font-size:16px;font-weight:600;cursor:pointer}
+  .opt:first-child{border-top:0}
+  .sw{-webkit-appearance:none;appearance:none;flex:none;width:50px;height:30px;margin:0;border-radius:15px;background:#dfe1ea;
+    position:relative;transition:background .2s;cursor:pointer}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+  .sw:checked{background:var(--accent)}
+  .sw:checked::after{transform:translateX(20px)}
+  @media (prefers-reduced-motion:reduce){.sw,.sw::after{transition:none}}
+  .optsel{background:#fafbfd}
+  .optsel select{border:0;background:transparent;font:inherit;font-weight:600;color:var(--accent);text-align:right;
+    -webkit-appearance:none;appearance:none;padding-right:18px;max-width:65%;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right center/14px}
+  #catRow #fCategory{height:auto;width:auto;border:0;border-radius:0;padding:4px 20px 4px 0;font-size:16px;color:var(--accent);
+    background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right center/14px}
+
+  /* Date field */
+  .datefield{position:relative}
+  .datefield .ico{position:absolute;left:14px;top:50%;width:20px;height:20px;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+  .sheet .datefield input[type=date]{height:50px;line-height:50px;border:1.5px solid var(--line);border-radius:14px;background:#fafbfd;
+    padding:0 14px 0 44px;font-size:17px;display:flex;align-items:center}
+  .sheet input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+  .sheet input[type=date]::-webkit-calendar-picker-indicator{opacity:0}
+
+  .actions{margin-top:22px}
+  .actions button{height:54px;border-radius:16px}
+  .save{box-shadow:0 6px 16px rgba(79,70,229,.28)}
+  .del{flex:0 0 34%;background:var(--gave-soft)}
+
+  .catmanage{border:1.5px solid var(--line)}
+  .addcat button{height:50px;border-radius:14px}
 </style>
 </head>
 <body>
@@ -307,34 +384,27 @@
 <div id="entryWrap">
   <div class="sheet-bg" data-close></div>
   <div class="sheet">
-    <h3 id="entryTitle">New Entry</h3>
-    <div class="seg" id="typeSeg">
-      <button data-v="got">You Got</button><button data-v="gave">You Gave</button>
+    <div class="sheet-head"><h3 id="entryTitle">New Entry</h3><button class="xclose" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="seg typeseg" id="typeSeg">
+      <button data-v="got"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>You Got</button><button data-v="gave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>You Gave</button>
     </div>
-    <label class="f">Amount (Rs)</label>
-    <input type="number" inputmode="decimal" id="fAmount" placeholder="0">
+    <div class="amountbox"><span class="cur">Rs</span><input type="number" inputmode="decimal" id="fAmount" placeholder="0" aria-label="Amount"></div>
     <label class="f">Detail</label>
     <input type="text" id="fNote" placeholder="Name or description">
     <label class="f">Entry for</label>
     <div class="seg" id="shopSeg">
       <button data-v="0">Daily</button><button data-v="1">Shop</button>
     </div>
-    <div class="checks">
-      <label class="check"><input type="checkbox" id="fException"><span>Exception</span></label>
-      <label class="check" id="excludeRow"><input type="checkbox" id="fExclude"><span>Exclude</span></label>
-    </div>
-    <div class="checks" id="expenseRow">
-      <label class="check"><input type="checkbox" id="fExpense"><span>Expense</span></label>
-    </div>
-    <div id="catRow">
-      <label class="f">Expense category</label>
-      <select id="fCategory"></select>
+    <div class="opts">
+      <label class="opt"><span>Exception</span><input type="checkbox" class="sw" id="fException"></label>
+      <label class="opt" id="excludeRow"><span>Exclude</span><input type="checkbox" class="sw" id="fExclude"></label>
+      <label class="opt" id="expenseRow"><span>Expense</span><input type="checkbox" class="sw" id="fExpense"></label>
+      <label class="opt optsel" id="catRow"><span>Category</span><select id="fCategory"></select></label>
     </div>
     <label class="f">Date</label>
-    <input type="date" id="fDate">
+    <div class="datefield"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><input type="date" id="fDate"></div>
     <div class="actions">
       <button class="del" id="delBtn">Delete</button>
-      <button class="cancel" data-close>Cancel</button>
       <button class="save" id="saveBtn">Save</button>
     </div>
   </div>
@@ -344,18 +414,16 @@
 <div id="xWrap">
   <div class="sheet-bg" data-close></div>
   <div class="sheet">
-    <h3 id="xTitle">Add Expense</h3>
-    <label class="f">Amount (Rs)</label>
-    <input type="number" inputmode="decimal" id="xAmount" placeholder="0">
+    <div class="sheet-head"><h3 id="xTitle">Add Expense</h3><button class="xclose" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="amountbox gaveamt"><span class="cur">Rs</span><input type="number" inputmode="decimal" id="xAmount" placeholder="0" aria-label="Amount"></div>
     <label class="f">Detail</label>
     <input type="text" id="xNote" placeholder="Name or description">
     <label class="f">Category</label>
     <select id="xCategory" class="selectbox"></select>
     <label class="f">Date</label>
-    <input type="date" id="xDate">
+    <div class="datefield"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><input type="date" id="xDate"></div>
     <div class="actions">
       <button class="del" id="xDel">Delete</button>
-      <button class="cancel" data-close>Cancel</button>
       <button class="save" id="xSave">Save</button>
     </div>
   </div>
@@ -365,13 +433,10 @@
 <div id="catWrap">
   <div class="sheet-bg" data-close></div>
   <div class="sheet">
-    <h3>Categories</h3>
+    <div class="sheet-head"><h3>Categories</h3><button class="xclose" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <label class="f">New category name</label>
     <div class="addcat"><input type="text" id="fNewCat" placeholder="e.g. Fuel"><button class="save" id="saveCatBtn">Add</button></div>
     <div class="catmanage" id="catList"></div>
-    <div class="actions">
-      <button class="cancel" data-close>Done</button>
-    </div>
   </div>
 </div>
 
@@ -538,6 +603,7 @@ function segVal(segId){ return document.querySelector(`#${segId} button.on`).dat
 ['typeSeg', 'shopSeg'].forEach(s => document.querySelectorAll(`#${s} button`).forEach(b => b.onclick = () => { setSeg(s, b.dataset.v); syncExclude(); }));
 // Exclude only applies to Shop entries
 function syncExclude(){
+  $('entryWrap').dataset.type = segVal('typeSeg');
   const isShop = segVal('shopSeg') === '1';
   $('excludeRow').style.display = isShop ? '' : 'none';
   if (!isShop) $('fExclude').checked = false;
