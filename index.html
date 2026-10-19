@@ -176,6 +176,10 @@
   .catmanage .row:first-child{border-top:0}
   .catmanage .row button{border:0;background:#eef2f6;color:var(--ink);font-size:14px;font-weight:600;height:34px;padding:0 12px;border-radius:9px;margin-left:6px}
   .catmanage .row button.rm{background:var(--gave-soft);color:var(--gave)}
+  .tag.tag-exp{color:var(--gave);background:var(--gave-soft)}
+  .catline{display:block;margin-top:4px}
+  .catline .tag.tag-cat{margin-left:0}
+  .tag.tag-cat{color:#7c3aed;background:#f1eafe}
   .xrow{cursor:pointer}
   .xrow:active{background:#f4f7fa}
   .tag{display:inline-block;font-size:12px;font-weight:600;color:var(--shop);background:var(--shop-soft);
@@ -412,8 +416,9 @@ let current = todayISO();
 
 const tags = (e, withShop) =>
   (withShop && e.shop ? ' <span class="tag">Shop</span>' : '') +
-  (e.expense ? ' <span class="tag">Expense</span>' : '') +
-  (e.exclude ? ' <span class="tag">Exclude</span>' : '');
+  (e.expense ? ' <span class="tag tag-exp">Expense</span>' : '') +
+  (e.exclude ? ' <span class="tag">Exclude</span>' : '') +
+  (e.expense && e.category ? `<span class="catline"><span class="tag tag-cat">${esc(e.category)}</span></span>` : '');
 function listHTML(items, cls, tagShop){
   if (!items.length) return '<div class="empty">No entries</div>';
   return items.map(e => `
