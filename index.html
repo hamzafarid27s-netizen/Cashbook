@@ -151,8 +151,10 @@
   .pnav button{width:44px;height:44px;border-radius:12px;border:0;background:var(--card);color:var(--ink);display:grid;place-items:center;
     box-shadow:0 0 0 1px rgba(16,42,67,.08)}
   .pnav button svg{width:20px;height:20px}
-  .plabel{flex:1;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;
+  .plabel{position:relative;flex:1;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;
     font-weight:600;box-shadow:0 0 0 1px rgba(16,42,67,.08)}
+  .mpick{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+  .mpick[hidden]{display:none}
   .daygrp{padding:10px 16px 4px;font-size:14px;font-weight:600;color:var(--muted);border-top:1px solid var(--line)}
   .stats .row .amt{font-size:18px}
   .exp-actions{display:flex;gap:10px;margin-bottom:14px}
@@ -261,7 +263,7 @@
   </div>
   <div class="pnav">
     <button id="expPrev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-    <div class="plabel" id="expLabel"></div>
+    <div class="plabel"><span id="expLabel"></span><input type="month" class="mpick" id="expMonth" aria-label="Choose month" hidden></div>
     <button id="expNext" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
   <div class="exp-actions">
@@ -290,7 +292,7 @@
   </div>
   <div class="pnav">
     <button id="catPrev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-    <div class="plabel" id="catLabel"></div>
+    <div class="plabel"><span id="catLabel"></span><input type="month" class="mpick" id="catMonth" aria-label="Choose month" hidden></div>
     <button id="catNext" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
   <div id="catBody"></div>
@@ -760,10 +762,23 @@ $('catList').addEventListener('click', async e => {
   renderCatList(); renderPeriods();
 });
 
+/* Pick any month (Monthly only) */
+function syncMonth(id, st, per){
+  $(id).hidden = st.kind !== 'month';
+  $(id).value = per.from.slice(0, 7);
+}
+function monthOffset(ym){
+  const [y, m] = ym.split('-').map(Number), t = new Date();
+  return (y - t.getFullYear()) * 12 + (m - 1 - t.getMonth());
+}
+$('expMonth').onchange = e => { if (e.target.value) { pstate.exp.off = monthOffset(e.target.value); renderPeriods(); } };
+$('catMonth').onchange = e => { if (e.target.value) { cstate.off = monthOffset(e.target.value); renderPeriods(); } };
+
 async function renderPeriods(){
   /* Expenses, category-wise */
   const ep = periodOf(pstate.exp.kind, pstate.exp.off);
-  $('expLabel').textContent = ep.label;
+  $('expLabel').textContent = ep.label + (pstate.exp.kind === 'month' ? ' ▾' : '');
+  syncMonth('expMonth', pstate.exp, ep);
   const ex = (await getRange(ep.from, ep.to)).filter(e => e.expense)
     .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : byTime(a, b));
   const et = sum(ex), heading = pstate.exp.kind === 'week' ? 'Weekly Expenses' : 'Monthly Expenses';
@@ -784,7 +799,8 @@ async function renderPeriods(){
   /* Category page */
   if (catPage) {
     const cp = periodOf(cstate.kind, cstate.off);
-    $('catLabel').textContent = cp.label;
+    $('catLabel').textContent = cp.label + (cstate.kind === 'month' ? ' ▾' : '');
+    syncMonth('catMonth', cstate, cp);
     catItems = (await getRange(cp.from, cp.to)).filter(e => e.expense && (e.category || 'No category') === catPage)
       .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : byTime(a, b));
     const ch = `${catPage} — ${cstate.kind === 'week' ? 'Weekly' : 'Monthly'}`;

@@ -1,5 +1,5 @@
 // Keeps the app working offline, but always loads the newest version when online.
-const CACHE = 'cashbook-v17';
+const CACHE = 'cashbook-v18';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
