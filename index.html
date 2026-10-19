@@ -152,6 +152,19 @@
     font-weight:600;box-shadow:0 0 0 1px rgba(16,42,67,.08)}
   .daygrp{padding:10px 16px 4px;font-size:14px;font-weight:600;color:var(--muted);border-top:1px solid var(--line)}
   .stats .row .amt{font-size:18px}
+  .exp-actions{display:flex;gap:10px;margin-bottom:14px}
+  .exp-actions button{flex:1;height:48px;border:0;border-radius:14px;font-size:16px;font-weight:700}
+  .exp-actions .b-got{color:#fff}
+  .exp-actions .cancel{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px rgba(16,42,67,.12)}
+  #fCategory{width:100%;height:50px;border:1.5px solid var(--line2);border-radius:12px;padding:0 14px;
+    font-size:17px;font-family:inherit;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none}
+  .catrow{cursor:pointer}
+  .catrow .chev{margin-left:8px}
+  .catdetail{background:#f7f9fc}
+  .catdetail .row{padding-left:28px}
+  .catdetail .daygrp{padding-left:28px}
+  .catlist{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+  .catlist span{font-size:13px;font-weight:600;color:var(--muted);background:#eef2f6;border-radius:8px;padding:4px 9px}
   .tag{display:inline-block;font-size:12px;font-weight:600;color:var(--shop);background:var(--shop-soft);
     border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px}
 </style>
@@ -227,6 +240,10 @@
     <div class="plabel" id="expLabel"></div>
     <button id="expNext" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
+  <div class="exp-actions">
+    <button class="b-got" id="addExpBtn">Add Expenses</button>
+    <button class="cancel" id="addCatBtn">Add Categories</button>
+  </div>
   <div id="expBody"></div>
 </main>
 
@@ -270,6 +287,10 @@
     <div class="checks" id="expenseRow">
       <label class="check"><input type="checkbox" id="fExpense"><span>Expense</span></label>
     </div>
+    <div id="catRow">
+      <label class="f">Expense category</label>
+      <select id="fCategory"></select>
+    </div>
     <label class="f">Date</label>
     <input type="date" id="fDate">
     <div class="actions">
@@ -280,16 +301,32 @@
   </div>
 </div>
 
+<!-- Category sheet -->
+<div id="catWrap">
+  <div class="sheet-bg" data-close></div>
+  <div class="sheet">
+    <h3>Add Category</h3>
+    <label class="f">Category name</label>
+    <input type="text" id="fNewCat" placeholder="e.g. Fuel">
+    <div class="catlist" id="catList"></div>
+    <div class="actions">
+      <button class="cancel" data-close>Cancel</button>
+      <button class="save" id="saveCatBtn">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ---------- Database (IndexedDB, stored on the phone) ---------- */
 const DB_NAME = 'cashbook', STORE = 'entries';
 let db;
 function openDB(){
   return new Promise((res, rej) => {
-    const r = indexedDB.open(DB_NAME, 1);
+    const r = indexedDB.open(DB_NAME, 2);
     r.onupgradeneeded = () => {
-      const s = r.result.createObjectStore(STORE, { keyPath: 'id' });
-      s.createIndex('date', 'date');
+      const d = r.result;
+      if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, { keyPath: 'id' }).createIndex('date', 'date');
+      if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta', { keyPath: 'key' });
     };
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -300,6 +337,13 @@ function req(r){ return new Promise((res, rej) => { r.onsuccess = () => res(r.re
 const putEntry = e => req(tx('readwrite').put(e));
 const delEntry = id => req(tx('readwrite').delete(id));
 const getRange = (from, to) => req(tx('readonly').index('date').getAll(IDBKeyRange.bound(from, to)));
+const DEFAULT_CATS = ['Home Expenses', 'Chiller Expenses', 'ZAMEEN Expenses', 'Salary', 'Loan Repayment'];
+let categories = DEFAULT_CATS.slice();
+async function loadCategories(){
+  const row = await req(db.transaction('meta').objectStore('meta').get('categories'));
+  if (row && row.list && row.list.length) categories = row.list;
+}
+const saveCategories = () => req(db.transaction('meta', 'readwrite').objectStore('meta').put({ key: 'categories', list: categories }));
 const getBefore = d => req(tx('readonly').index('date').getAll(IDBKeyRange.upperBound(d, true)));
 
 /* ---------- Helpers ---------- */
@@ -320,11 +364,15 @@ const byTime = (a, b) => a.createdAt - b.createdAt;
 /* ---------- State & render ---------- */
 let current = todayISO();
 
+const tags = (e, withShop) =>
+  (withShop && e.shop ? ' <span class="tag">Shop</span>' : '') +
+  (e.expense ? ' <span class="tag">Expense</span>' : '') +
+  (e.exclude ? ' <span class="tag">Exclude</span>' : '');
 function listHTML(items, cls, tagShop){
   if (!items.length) return '<div class="empty">No entries</div>';
   return items.map(e => `
     <div class="row entry" data-id="${e.id}">
-      <div class="note">${esc(e.note || '—')}${tagShop && e.shop ? ' <span class="tag">Shop</span>' : ''}</div>
+      <div class="note">${esc(e.note || '—')}${tags(e, tagShop)}</div>
       <div class="amt ${cls}">${fmt(e.amount)}</div>
     </div>`).join('');
 }
@@ -351,7 +399,7 @@ async function render(){
   $('exCount').textContent = ex.length;
   $('exList').innerHTML = ex.length ? ex.map(e => `
     <div class="row entry" data-id="${e.id}">
-      <div class="note">${esc(e.note || '—')}${e.shop ? ' <span class="tag">Shop</span>' : ''}${e.exclude ? ' <span class="tag">Exclude</span>' : ''}
+      <div class="note">${esc(e.note || '—')}${tags(e, true)}
         <small>${isGot(e) ? 'You Got' : 'You Gave'}</small></div>
       <div class="amt ${e.type}">${fmt(e.amount)}</div>
     </div>`).join('') : '<div class="empty">No exception entries</div>';
@@ -429,7 +477,15 @@ function syncExclude(){
   const isGave = segVal('typeSeg') === 'gave';
   $('expenseRow').style.display = isGave ? '' : 'none';
   if (!isGave) $('fExpense').checked = false;
+  $('catRow').style.display = $('fExpense').checked ? '' : 'none';
 }
+function fillCategorySelect(selected){
+  const opts = categories.slice();
+  if (selected && !opts.includes(selected)) opts.push(selected);
+  $('fCategory').innerHTML = '<option value="">Choose category</option>' +
+    opts.map(c => `<option${c === selected ? ' selected' : ''}>${esc(c)}</option>`).join('');
+}
+$('fExpense').onchange = syncExclude;
 
 let editing = null;
 function openEntry(type, entry){
@@ -443,6 +499,7 @@ function openEntry(type, entry){
   $('fException').checked = !!(entry && entry.exception);
   $('fExclude').checked = !!(entry && entry.exclude);
   $('fExpense').checked = !!(entry && entry.expense);
+  fillCategorySelect(entry && entry.category);
   syncExclude();
   $('delBtn').style.display = entry ? '' : 'none';
   openSheet('entryWrap');
@@ -459,6 +516,7 @@ $('saveBtn').onclick = async () => {
   const amount = parseFloat($('fAmount').value);
   if (!(amount > 0)) { alert('Please enter an amount.'); return; }
   const date = $('fDate').value || current;
+  if (segVal('typeSeg') === 'gave' && $('fExpense').checked && !$('fCategory').value) { alert('Please choose an expense category.'); return; }
   const e = {
     id: editing ? editing.id : (Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
     createdAt: editing ? editing.createdAt : Date.now(),
@@ -468,6 +526,7 @@ $('saveBtn').onclick = async () => {
   };
   e.exclude = e.shop && $('fExclude').checked;
   e.expense = e.type === 'gave' && $('fExpense').checked;
+  e.category = e.expense ? $('fCategory').value : '';
   await putEntry(e);
   closeSheets();
   current = date;
@@ -532,28 +591,59 @@ const pstate = { exp: { kind: 'week', off: 0 }, rep: { kind: 'week', off: 0 } };
 });
 const shortDate = iso => parse(iso).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
 let expText = '', repText = '';
+const openCats = new Set();
+$('expBody').addEventListener('click', e => {
+  const r = e.target.closest('.catrow'); if (!r) return;
+  const c = r.dataset.cat; openCats.has(c) ? openCats.delete(c) : openCats.add(c); renderPeriods();
+});
+$('addExpBtn').onclick = () => {
+  openEntry('gave');
+  $('fDate').value = todayISO();
+  $('fExpense').checked = true; syncExclude();
+};
+$('addCatBtn').onclick = () => {
+  $('fNewCat').value = '';
+  $('catList').innerHTML = categories.map(c => `<span>${esc(c)}</span>`).join('');
+  openSheet('catWrap');
+  setTimeout(() => $('fNewCat').focus(), 250);
+};
+$('saveCatBtn').onclick = async () => {
+  const name = $('fNewCat').value.trim();
+  if (!name) { alert('Please enter a category name.'); return; }
+  if (categories.some(c => c.toLowerCase() === name.toLowerCase())) { alert('This category already exists.'); return; }
+  categories.push(name); await saveCategories();
+  closeSheets(); renderPeriods();
+};
 
 async function renderPeriods(){
-  /* Expenses */
+  /* Expenses, category-wise */
   const ep = periodOf(pstate.exp.kind, pstate.exp.off);
   $('expLabel').textContent = ep.label;
   const ex = (await getRange(ep.from, ep.to)).filter(e => e.expense)
     .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : byTime(a, b));
   const et = sum(ex), heading = pstate.exp.kind === 'week' ? 'Weekly Expenses' : 'Monthly Expenses';
-  let html = '', txt = [`*${heading} — ${ep.label}*`, ''], last = '';
-  ex.forEach(e => {
-    if (e.date !== last) {
-      last = e.date;
-      html += `<div class="daygrp">${esc(shortDate(e.date))}</div>`;
-      txt.push(`_${shortDate(e.date)}_`);
+  const groups = categories.slice();
+  ex.forEach(e => { const c = e.category || 'No category'; if (!groups.includes(c)) groups.push(c); });
+  let html = '', txt = [`*${heading} — ${ep.label}*`, ''];
+  groups.forEach(c => {
+    const items = ex.filter(e => (e.category || 'No category') === c);
+    const open = openCats.has(c);
+    html += `<div class="row catrow" data-cat="${esc(c)}"><div class="note">${esc(c)}</div>
+      <div><span class="amt gave">${fmt(sum(items))}</span><span class="chev">${open ? '▴' : '▾'}</span></div></div>`;
+    if (open) {
+      let d = '', last = '';
+      items.forEach(e => {
+        if (e.date !== last) { last = e.date; d += `<div class="daygrp">${esc(shortDate(e.date))}</div>`; }
+        d += `<div class="row"><div class="note">${esc(e.note || '—')}${e.shop ? ' <span class="tag">Shop</span>' : ''}</div><div class="amt gave">${fmt(e.amount)}</div></div>`;
+      });
+      html += `<div class="catdetail">${d || '<div class="empty">No entries</div>'}</div>`;
     }
-    html += `<div class="row"><div class="note">${esc(e.note || '—')}${e.shop ? ' <span class="tag">Shop</span>' : ''}</div><div class="amt gave">${fmt(e.amount)}</div></div>`;
-    txt.push(`${e.note || '—'}${e.shop ? ' (Shop)' : ''}: ${fmt(e.amount)}`);
+    txt.push(`${c}: ${fmt(sum(items))}`);
+    if (open) items.forEach(e => txt.push(`   • ${shortDate(e.date)} — ${e.note || '—'}: ${fmt(e.amount)}`));
   });
-  if (!ex.length) { html = '<div class="empty">No expenses in this period</div>'; txt.push('No expenses'); }
   $('expBody').innerHTML = `<section class="card"><h2 class="h-gave"><span>${heading}</span></h2>${html}
-    <div class="row total"><span>Total Expenses</span><span class="amt gave">${fmt(et)}</span></div></section>`;
-  txt.push('', `*Total Expenses: ${fmt(et)}*`);
+    <div class="row total"><span>Total</span><span class="amt gave">${fmt(et)}</span></div></section>`;
+  txt.push('', `*Total: ${fmt(et)}*`);
   expText = txt.join('\n');
 
   /* Report: same totals as the top of the Cash Book */
@@ -573,10 +663,26 @@ async function renderPeriods(){
 /* ---------- Start ---------- */
 (async () => {
   db = await openDB();
+  await loadCategories();
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
   render(); renderPeriods();
 })();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+/* ---------- Auto update ---------- */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    reg.update();
+    // Check again whenever the app is brought back to the screen
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update(); });
+  });
+  // When a new version takes over, reload once to show it
+  let reloaded = false;
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloaded) return;
+    reloaded = true;
+    if (!document.querySelector('.open')) location.reload();   // never reload while a form is open
+  });
+}
 </script>
 </body>
 </html>
