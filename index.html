@@ -156,15 +156,28 @@
   .exp-actions button{flex:1;height:48px;border:0;border-radius:14px;font-size:16px;font-weight:700}
   .exp-actions .b-got{color:#fff}
   .exp-actions .cancel{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px rgba(16,42,67,.12)}
-  #fCategory{width:100%;height:50px;border:1.5px solid var(--line2);border-radius:12px;padding:0 14px;
-    font-size:17px;font-family:inherit;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none}
   .catrow{cursor:pointer}
   .catrow .chev{margin-left:8px}
   .catdetail{background:#f7f9fc}
   .catdetail .row{padding-left:28px}
   .catdetail .daygrp{padding-left:28px}
-  .catlist{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
-  .catlist span{font-size:13px;font-weight:600;color:var(--muted);background:#eef2f6;border-radius:8px;padding:4px 9px}
+  .ttl{display:flex;align-items:center;gap:8px;min-width:0}
+  .ttl h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .back{width:38px;height:38px;border:0;border-radius:12px;background:var(--navy2);color:#fff;display:grid;place-items:center;flex:none}
+  .back[hidden],.tabs[hidden]{display:none}
+  .back svg{width:20px;height:20px}
+  .selectbox,#fCategory{width:100%;height:50px;border:1.5px solid var(--line2);border-radius:12px;padding:0 14px;
+    font-size:17px;font-family:inherit;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none}
+  #xAmount{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;height:58px}
+  .addcat{display:flex;gap:8px}
+  .addcat input{flex:1;min-width:0}
+  .addcat button{flex:none;height:50px;padding:0 18px;border:0;border-radius:12px;font-size:16px;font-weight:700}
+  .catmanage{margin-top:16px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .catmanage .row:first-child{border-top:0}
+  .catmanage .row button{border:0;background:#eef2f6;color:var(--ink);font-size:14px;font-weight:600;height:34px;padding:0 12px;border-radius:9px;margin-left:6px}
+  .catmanage .row button.rm{background:var(--gave-soft);color:var(--gave)}
+  .xrow{cursor:pointer}
+  .xrow:active{background:#f4f7fa}
   .tag{display:inline-block;font-size:12px;font-weight:600;color:var(--shop);background:var(--shop-soft);
     border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:1px}
 </style>
@@ -172,7 +185,7 @@
 <body>
 <header>
   <div class="top">
-    <h1>Cash Book</h1>
+    <div class="ttl"><button class="back" id="backBtn" hidden aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h1 id="appTitle">Cash Book</h1></div>
     <button class="wa" id="waBtn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3z"/></svg>WhatsApp</button>
   </div>
   <nav class="tabs" id="tabs">
@@ -259,6 +272,18 @@
   <div id="repBody"></div>
 </main>
 
+<main class="view" id="view-cat" hidden>
+  <div class="seg" id="catSeg" style="margin-bottom:14px">
+    <button data-v="week" class="on">Weekly</button><button data-v="month">Monthly</button>
+  </div>
+  <div class="pnav">
+    <button id="catPrev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="plabel" id="catLabel"></div>
+    <button id="catNext" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+  <div id="catBody"></div>
+</main>
+
 <div class="bottom" id="bottomBar">
   <button class="b-got" id="addGot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>You Got</button>
   <button class="b-gave" id="addGave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>You Gave</button>
@@ -301,17 +326,37 @@
   </div>
 </div>
 
+<!-- Expense entry sheet (Expenses only, not in Cash Book) -->
+<div id="xWrap">
+  <div class="sheet-bg" data-close></div>
+  <div class="sheet">
+    <h3 id="xTitle">Add Expense</h3>
+    <label class="f">Amount (Rs)</label>
+    <input type="number" inputmode="decimal" id="xAmount" placeholder="0">
+    <label class="f">Detail</label>
+    <input type="text" id="xNote" placeholder="Name or description">
+    <label class="f">Category</label>
+    <select id="xCategory" class="selectbox"></select>
+    <label class="f">Date</label>
+    <input type="date" id="xDate">
+    <div class="actions">
+      <button class="del" id="xDel">Delete</button>
+      <button class="cancel" data-close>Cancel</button>
+      <button class="save" id="xSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Category sheet -->
 <div id="catWrap">
   <div class="sheet-bg" data-close></div>
   <div class="sheet">
-    <h3>Add Category</h3>
-    <label class="f">Category name</label>
-    <input type="text" id="fNewCat" placeholder="e.g. Fuel">
-    <div class="catlist" id="catList"></div>
+    <h3>Categories</h3>
+    <label class="f">New category name</label>
+    <div class="addcat"><input type="text" id="fNewCat" placeholder="e.g. Fuel"><button class="save" id="saveCatBtn">Add</button></div>
+    <div class="catmanage" id="catList"></div>
     <div class="actions">
-      <button class="cancel" data-close>Cancel</button>
-      <button class="save" id="saveCatBtn">Save</button>
+      <button class="cancel" data-close>Done</button>
     </div>
   </div>
 </div>
@@ -344,6 +389,7 @@ async function loadCategories(){
   if (row && row.list && row.list.length) categories = row.list;
 }
 const saveCategories = () => req(db.transaction('meta', 'readwrite').objectStore('meta').put({ key: 'categories', list: categories }));
+const getAll = () => req(tx('readonly').getAll());
 const getBefore = d => req(tx('readonly').index('date').getAll(IDBKeyRange.upperBound(d, true)));
 
 /* ---------- Helpers ---------- */
@@ -391,7 +437,7 @@ async function render(){
   $('dateLabel').innerHTML = esc(niceDate(current)) + (current === todayISO() ? '<span class="today-chip">Today</span>' : '');
   $('datePick').value = current;
 
-  dayEntries = (await getRange(current, current)).sort(byTime);
+  dayEntries = (await getRange(current, current)).filter(e => !e.expenseOnly).sort(byTime);
   const isGot = e => e.type === 'got', isGave = e => e.type === 'gave';
 
   // Exception: hidden from lists, still counted in totals
@@ -424,7 +470,7 @@ async function render(){
   $('shopTotalGave').textContent = fmt(stv);
 
   // Previous day shop balance = all shop Got − shop Gave before this date (carried forward)
-  const prior = (await getBefore(current)).filter(e => e.shop);
+  const prior = (await getBefore(current)).filter(e => e.shop && !e.expenseOnly);
   const prev = sum(prior.filter(e => e.type === 'got')) - sum(prior.filter(e => e.type === 'gave'));
   setBal($('prevShop'), prev);
   setBal($('shopBalance'), stg - stv + prev);
@@ -549,12 +595,12 @@ async function shareText(text){
   try { await navigator.clipboard.writeText(text); alert('Copied. Paste it in WhatsApp.'); }
   catch (err) { prompt('Copy this text:', text); }
 }
-$('waBtn').onclick = () => shareText(tab === 'book' ? waText : tab === 'exp' ? expText : repText);
+$('waBtn').onclick = () => shareText(catPage ? catText : tab === 'book' ? waText : tab === 'exp' ? expText : repText);
 
 /* ---------- Tabs ---------- */
 let tab = 'book';
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
-  tab = b.dataset.v;
+  tab = b.dataset.v; catPage = null; showCatPage(false);
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
   ['book', 'exp', 'rep'].forEach(k => $('view-' + k).hidden = k !== tab);
   document.querySelector('.datebar').hidden = tab !== 'book';
@@ -591,29 +637,110 @@ const pstate = { exp: { kind: 'week', off: 0 }, rep: { kind: 'week', off: 0 } };
 });
 const shortDate = iso => parse(iso).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
 let expText = '', repText = '';
-const openCats = new Set();
+let catPage = null, catText = '', catItems = [];
+const cstate = { kind: 'week', off: 0 };
+function showCatPage(on){
+  $('view-cat').hidden = !on;
+  $('view-exp').hidden = on || tab !== 'exp';
+  $('tabs').hidden = on;
+  $('backBtn').hidden = !on;
+  $('appTitle').textContent = on ? catPage : 'Cash Book';
+  window.scrollTo(0, 0);
+}
+function setSegOn(segId, v){ document.querySelectorAll(`#${segId} button`).forEach(x => x.classList.toggle('on', x.dataset.v === v)); }
 $('expBody').addEventListener('click', e => {
   const r = e.target.closest('.catrow'); if (!r) return;
-  const c = r.dataset.cat; openCats.has(c) ? openCats.delete(c) : openCats.add(c); renderPeriods();
+  catPage = r.dataset.cat;
+  Object.assign(cstate, pstate.exp); setSegOn('catSeg', cstate.kind);   // start on the same week/month
+  showCatPage(true); renderPeriods();
 });
-$('addExpBtn').onclick = () => {
-  openEntry('gave');
-  $('fDate').value = todayISO();
-  $('fExpense').checked = true; syncExclude();
+$('backBtn').onclick = () => { catPage = null; showCatPage(false); renderPeriods(); };
+document.querySelectorAll('#catSeg button').forEach(b => b.onclick = () => {
+  setSegOn('catSeg', b.dataset.v); cstate.kind = b.dataset.v; cstate.off = 0; renderPeriods();
+});
+$('catPrev').onclick = () => { cstate.off--; renderPeriods(); };
+$('catNext').onclick = () => { cstate.off++; renderPeriods(); };
+
+// Edit any expense from the category page
+$('catBody').addEventListener('click', e => {
+  const r = e.target.closest('.xrow'); if (!r) return;
+  const item = catItems.find(x => x.id === r.dataset.id); if (!item) return;
+  item.expenseOnly ? openExpense(item) : openEntry(null, item);
+});
+
+/* Expense-only entry (does not appear in the Cash Book) */
+let xEditing = null;
+function fillSelect(el, selected){
+  const opts = categories.slice();
+  if (selected && !opts.includes(selected)) opts.push(selected);
+  el.innerHTML = '<option value="">Choose category</option>' +
+    opts.map(c => `<option${c === selected ? ' selected' : ''}>${esc(c)}</option>`).join('');
+}
+function openExpense(entry){
+  xEditing = entry || null;
+  $('xTitle').textContent = entry ? 'Edit Expense' : 'Add Expense';
+  $('xAmount').value = entry ? entry.amount : '';
+  $('xNote').value = entry ? entry.note : '';
+  fillSelect($('xCategory'), entry ? entry.category : (catPage && catPage !== 'No category' ? catPage : ''));
+  $('xDate').value = entry ? entry.date : todayISO();
+  $('xDel').style.display = entry ? '' : 'none';
+  openSheet('xWrap');
+  if (!entry) setTimeout(() => $('xAmount').focus(), 250);
+}
+$('addExpBtn').onclick = () => openExpense();
+$('xSave').onclick = async () => {
+  const amount = parseFloat($('xAmount').value), note = $('xNote').value.trim(), category = $('xCategory').value;
+  if (!(amount > 0)) { alert('Please enter an amount.'); return; }
+  if (!note) { alert('Please enter the detail.'); return; }
+  if (!category) { alert('Please choose a category.'); return; }
+  await putEntry({
+    id: xEditing ? xEditing.id : (Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
+    createdAt: xEditing ? xEditing.createdAt : Date.now(),
+    date: $('xDate').value || todayISO(), amount, note, category,
+    type: 'gave', expense: true, expenseOnly: true
+  });
+  closeSheets(); renderPeriods();
 };
-$('addCatBtn').onclick = () => {
-  $('fNewCat').value = '';
-  $('catList').innerHTML = categories.map(c => `<span>${esc(c)}</span>`).join('');
-  openSheet('catWrap');
-  setTimeout(() => $('fNewCat').focus(), 250);
+$('xDel').onclick = async () => {
+  if (!xEditing || !confirm('Delete this expense?')) return;
+  await delEntry(xEditing.id); closeSheets(); renderPeriods();
 };
+
+/* Categories: add, rename, delete */
+function renderCatList(){
+  $('catList').innerHTML = categories.map((c, i) => `
+    <div class="row"><div class="note">${esc(c)}</div>
+      <div><button data-act="edit" data-i="${i}">Edit</button><button class="rm" data-act="del" data-i="${i}">Delete</button></div></div>`).join('')
+    || '<div class="empty">No categories</div>';
+}
+async function moveCategory(from, to){
+  const all = await getAll();
+  for (const e of all) if (e.expense && e.category === from) { e.category = to; await putEntry(e); }
+}
+$('addCatBtn').onclick = () => { $('fNewCat').value = ''; renderCatList(); openSheet('catWrap'); };
+const catExists = (name, skip) => categories.some((c, i) => i !== skip && c.toLowerCase() === name.toLowerCase());
 $('saveCatBtn').onclick = async () => {
   const name = $('fNewCat').value.trim();
   if (!name) { alert('Please enter a category name.'); return; }
-  if (categories.some(c => c.toLowerCase() === name.toLowerCase())) { alert('This category already exists.'); return; }
+  if (catExists(name)) { alert('This category already exists.'); return; }
   categories.push(name); await saveCategories();
-  closeSheets(); renderPeriods();
+  $('fNewCat').value = ''; renderCatList(); renderPeriods();
 };
+$('catList').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = Number(b.dataset.i), old = categories[i];
+  if (b.dataset.act === 'edit') {
+    const name = (prompt('Rename category', old) || '').trim();
+    if (!name || name === old) return;
+    if (catExists(name, i)) { alert('This category already exists.'); return; }
+    categories[i] = name; await saveCategories(); await moveCategory(old, name);
+    if (catPage === old) { catPage = name; $('appTitle').textContent = name; }
+  } else {
+    if (!confirm(`Delete "${old}"? Its expenses will move to No category.`)) return;
+    categories.splice(i, 1); await saveCategories(); await moveCategory(old, '');
+  }
+  renderCatList(); renderPeriods();
+});
 
 async function renderPeriods(){
   /* Expenses, category-wise */
@@ -627,29 +754,41 @@ async function renderPeriods(){
   let html = '', txt = [`*${heading} — ${ep.label}*`, ''];
   groups.forEach(c => {
     const items = ex.filter(e => (e.category || 'No category') === c);
-    const open = openCats.has(c);
     html += `<div class="row catrow" data-cat="${esc(c)}"><div class="note">${esc(c)}</div>
-      <div><span class="amt gave">${fmt(sum(items))}</span><span class="chev">${open ? '▴' : '▾'}</span></div></div>`;
-    if (open) {
-      let d = '', last = '';
-      items.forEach(e => {
-        if (e.date !== last) { last = e.date; d += `<div class="daygrp">${esc(shortDate(e.date))}</div>`; }
-        d += `<div class="row"><div class="note">${esc(e.note || '—')}${e.shop ? ' <span class="tag">Shop</span>' : ''}</div><div class="amt gave">${fmt(e.amount)}</div></div>`;
-      });
-      html += `<div class="catdetail">${d || '<div class="empty">No entries</div>'}</div>`;
-    }
+      <div><span class="amt gave">${fmt(sum(items))}</span><span class="chev">›</span></div></div>`;
     txt.push(`${c}: ${fmt(sum(items))}`);
-    if (open) items.forEach(e => txt.push(`   • ${shortDate(e.date)} — ${e.note || '—'}: ${fmt(e.amount)}`));
   });
   $('expBody').innerHTML = `<section class="card"><h2 class="h-gave"><span>${heading}</span></h2>${html}
     <div class="row total"><span>Total</span><span class="amt gave">${fmt(et)}</span></div></section>`;
   txt.push('', `*Total: ${fmt(et)}*`);
   expText = txt.join('\n');
 
+  /* Category page */
+  if (catPage) {
+    const cp = periodOf(cstate.kind, cstate.off);
+    $('catLabel').textContent = cp.label;
+    catItems = (await getRange(cp.from, cp.to)).filter(e => e.expense && (e.category || 'No category') === catPage)
+      .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : byTime(a, b));
+    const ch = `${catPage} — ${cstate.kind === 'week' ? 'Weekly' : 'Monthly'}`;
+    let d = '', last = '', t = [`*${ch} — ${cp.label}*`, ''];
+    catItems.forEach(e => {
+      if (e.date !== last) { last = e.date; d += `<div class="daygrp">${esc(shortDate(e.date))}</div>`; t.push(`_${shortDate(e.date)}_`); }
+      d += `<div class="row xrow" data-id="${e.id}"><div class="note">${esc(e.note || '—')}${e.shop ? ' <span class="tag">Shop</span>' : ''}</div><div class="amt gave">${fmt(e.amount)}</div></div>`;
+      t.push(`${e.note || '—'}: ${fmt(e.amount)}`);
+    });
+    if (!catItems.length) { d = '<div class="empty">No expenses in this period</div>'; t.push('No expenses'); }
+    $('catBody').innerHTML = `<div class="exp-actions"><button class="b-got" id="catAddBtn">Add Expenses</button></div>
+      <section class="card"><h2 class="h-gave"><span>${esc(catPage)}</span></h2>${d}
+      <div class="row total"><span>Total</span><span class="amt gave">${fmt(sum(catItems))}</span></div></section>`;
+    $('catAddBtn').onclick = () => openExpense();
+    t.push('', `*Total: ${fmt(sum(catItems))}*`);
+    catText = t.join('\n');
+  }
+
   /* Report: same totals as the top of the Cash Book */
   const rp = periodOf(pstate.rep.kind, pstate.rep.off);
   $('repLabel').textContent = rp.label;
-  const top = (await getRange(rp.from, rp.to)).filter(topCounts);
+  const top = (await getRange(rp.from, rp.to)).filter(e => topCounts(e) && !e.expenseOnly);
   const g = sum(top.filter(e => e.type === 'got')), v = sum(top.filter(e => e.type === 'gave'));
   const rh = pstate.rep.kind === 'week' ? 'Weekly Report' : 'Monthly Report';
   $('repBody').innerHTML = `<section class="card stats"><h2 class="h-got"><span>${rh}</span></h2>
