@@ -498,11 +498,12 @@ async function render(){
   waText = [
     `*Cash Book — ${niceDate(current)}*`,
     '',
+    `*Previous Day Balance: ${fmt(prevBal)}*`,
+    '',
     '*You Got*', ...lines(got.filter(e => !e.exception), true), `*Total Got: ${fmt(tg)}*`,
     '',
     '*You Gave*', ...lines(gave.filter(e => !e.exception), true), `*Total Gave: ${fmt(tv)}*`,
     '',
-    `Previous Day Balance: ${fmt(prevBal)}`,
     `*Balance: ${fmt(bal)}*`,
     '',
     '*SHOP*',
