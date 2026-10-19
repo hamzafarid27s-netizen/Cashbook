@@ -491,9 +491,8 @@ let current = todayISO();
 
 const tags = (e, withShop) =>
   (withShop && e.shop ? ' <span class="tag">Shop</span>' : '') +
-  (e.expense ? ' <span class="tag tag-exp">Expense</span>' : '') +
-  (e.exclude ? ' <span class="tag">Exclude</span>' : '') +
-  (e.expense && e.category ? `<span class="catline"><span class="tag tag-cat">${esc(e.category)}</span></span>` : '');
+  (e.expense && e.category ? ` <span class="tag tag-exp">${esc(e.category)}</span>` : '') +
+  (e.exclude ? ' <span class="tag">Exclude</span>' : '');
 function listHTML(items, cls, tagShop){
   if (!items.length) return '<div class="empty">No entries</div>';
   return items.map(e => `
