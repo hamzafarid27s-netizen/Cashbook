@@ -80,6 +80,9 @@
   .card.hero .lbl small{color:#9fb3c8}
   .card.hero .amt.got{color:#5ee0a8} .card.hero .amt.gave{color:#ff8a7a}
   .card.hero .amt{font-size:30px}
+  .card.hero .prevbal{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px 12px;
+    border-bottom:1px solid rgba(255,255,255,.12);color:#bcccdc;font-size:15px;font-weight:600}
+  .card.hero .prevbal .amt{font-size:18px}
 
   /* Shop */
   .shop-bal{border-top:1px solid var(--line);background:var(--shop-soft)}
@@ -226,8 +229,9 @@
   </section>
 
   <section class="card hero">
+    <div class="prevbal"><span>Previous Day Balance</span><span class="amt" id="prevBal"></span></div>
     <div class="balance">
-      <div class="lbl">Balance<small>Total Got − Total Gave</small></div>
+      <div class="lbl">Balance<small>Total Got + Previous Day Balance − Total Gave</small></div>
       <div class="amt" id="balance"></div>
     </div>
   </section>
@@ -463,7 +467,12 @@ async function render(){
   const tg = sum(got), tv = sum(gave);
   $('totalGot').textContent = fmt(tg);
   $('totalGave').textContent = fmt(tv);
-  setBal($('balance'), tg - tv);
+  // Previous day balance = all earlier Got − Gave (same rules as the totals), carried forward
+  const before = (await getBefore(current)).filter(e => topCounts(e) && !e.expenseOnly);
+  const prevBal = sum(before.filter(isGot)) - sum(before.filter(isGave));
+  const bal = tg + prevBal - tv;
+  setBal($('prevBal'), prevBal);
+  setBal($('balance'), bal);
 
   // Shop section: all shop entries count; exceptions are not listed
   const shop = dayEntries.filter(e => e.shop);
@@ -491,7 +500,8 @@ async function render(){
     '',
     '*You Gave*', ...lines(gave.filter(e => !e.exception), true), `*Total Gave: ${fmt(tv)}*`,
     '',
-    `*Balance: ${fmt(tg - tv)}*`,
+    `Previous Day Balance: ${fmt(prevBal)}`,
+    `*Balance: ${fmt(bal)}*`,
     '',
     '*SHOP*',
     '_Shop Got_', ...lines(sGot.filter(e => !e.exception)), `Total Got (Shop): ${fmt(stg)}`,
